@@ -13,9 +13,10 @@ namespace Tram.Controller.Repositories
     public class FileRepository : IRepository
     {
         private string mapPath, linesPath;
-        private List<TramsIntersection> tramsIntersections;
+        private List<TramIntersection> tramIntersections;
         private List<TramLine> tramLines;
         private List<Node> nodes;
+        private List<CarIntersection> carIntersections;
 
         #region Public Methods
 
@@ -32,11 +33,13 @@ namespace Tram.Controller.Repositories
             LoadLines();
         }
 
-        public List<TramsIntersection> GetTramsIntersections() => tramsIntersections;
+        public List<TramIntersection> GetTramIntersections() => tramIntersections;
 
         public List<TramLine> GetLines() => tramLines;
 
         public List<Node> GetMap() => nodes;
+
+        public List<CarIntersection> GetCarIntersections() => carIntersections;
 
         #endregion Public Methods
 
@@ -110,7 +113,8 @@ namespace Tram.Controller.Repositories
         private void LoadMapAndIntersections()
         {
             nodes = new List<Node>();
-            tramsIntersections = new List<TramsIntersection>();
+            tramIntersections = new List<TramIntersection>();
+            carIntersections = new List<CarIntersection>();
             List<string> childrenStr = new List<string>();
 
             using (var file = new StreamReader(mapPath))
@@ -129,10 +133,22 @@ namespace Tram.Controller.Repositories
                                 Coordinates = new Vector2(float.Parse(par[0], CultureInfo.InvariantCulture.NumberFormat), float.Parse(par[1], CultureInfo.InvariantCulture.NumberFormat)),
                                 Id = par[2],
                                 IsUnderground = par[9] == "1",
+                                LightState = LightState.Red,
                                 Type = par[4] == "1" ? NodeType.TramStop :
                                        par[6] == "1" ? NodeType.CarCross :
                                        !string.IsNullOrEmpty(par[3]) ? NodeType.TramCross : NodeType.Normal
                             };
+                            
+                            if (!string.IsNullOrEmpty(par[7]))
+                            {
+                                carIntersections.Add(new CarIntersection()
+                                {
+                                    Node = node,
+                                    TimeToChange = int.Parse(par[7]),
+                                    GreenInterval = int.Parse(par[7]),
+                                    RedInterval = int.Parse(par[8])
+                                });
+                            }
 
                             StringBuilder childStr = new StringBuilder(";");
                             for (int i = 10; i < par.Length; i++)
@@ -150,12 +166,12 @@ namespace Tram.Controller.Repositories
                             string intersectionId = par[3];
                             if (!string.IsNullOrEmpty(intersectionId))
                             {
-                                if (!tramsIntersections.Any(i => i.Id.Equals(intersectionId)))
+                                if (!tramIntersections.Any(i => i.Id.Equals(intersectionId)))
                                 {
-                                    tramsIntersections.Add(new TramsIntersection() { Id = intersectionId, Vehicles = new Queue<Vehicle>(), Nodes = new List<Node>() });
+                                    tramIntersections.Add(new TramIntersection() { Id = intersectionId, Vehicles = new Queue<Vehicle>(), Nodes = new List<Node>() });
                                 }                                
 
-                                var intersection = tramsIntersections.Single(i => i.Id.Equals(intersectionId));
+                                var intersection = tramIntersections.Single(i => i.Id.Equals(intersectionId));
                                 intersection.Nodes.Add(node);
                                 node.Intersection = intersection;
                             }

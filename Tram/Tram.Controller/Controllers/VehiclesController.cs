@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Tram.Common.Consts;
 using Tram.Common.Enums;
@@ -23,62 +24,51 @@ namespace Tram.Controller.Controllers
 
             foreach (var vehicle in mainController.Vehicles)
             {
-                CalculateSpeed(vehicle, mainController.Vehicles, mainController.Map, deltaTime);
+                float prevSpeed = vehicle.Speed;
+                CalculateSpeed(vehicle, mainController.Vehicles, deltaTime);
                 if (!vehicle.IsOnStop)
                 {
-                    CalculatePosition(vehicle, mainController.Map, deltaTime);
+                    CalculatePosition(vehicle, prevSpeed);
                 }
             }
         }
 
         // Check if there is 'length' free space (in meters), starts from 'coordinates'
-        public bool IsFreeSpace(Node node, List<Vehicle> vehicles, int length)
+        public bool IsFreeSpace(Node node, float length)
         {
-            return !vehicles.Any(v => GeometryHelper.GetRealDistance(node.Coordinates, v.Position.Coordinates) <= length && v.VisitedNodes.Any(n => n.Equals(node)));
+            return !mainController.Vehicles.Any(v => GeometryHelper.GetRealDistance(node.Coordinates, v.Position.Coordinates) <= length && 
+                                                     (v.VisitedNodes.Any(n => n.Equals(node)) || v.Line.MainNodes.First().Equals(node)));
         } 
 
         #endregion Public Methods
 
         #region Private Methods
         
-        private void CalculateSpeed(Vehicle vehicle, List<Vehicle> vehicles, List<Node> map, float deltaTime)
+        private void CalculateSpeed(Vehicle vehicle, List<Vehicle> vehicles, float deltaTime)
         {
-            //TODO: OBSŁUGA CZEKANIA NA SKRZYZOWANIU SAMOCHODOWYM
-            float distance;
-            TramsIntersection tramIntersection;
+            TramIntersection tramIntersection;
             //Check if is on stop
             if (vehicle.Speed < CalculationConsts.EPSILON && !vehicle.IsOnStop && vehicle.IsBusStopReached())
             {
                 vehicle.IsOnStop = true;
-                vehicle.Speed = 50; //TODO: tutaj przypisujemy szybkość - czyli własciwie to ile czasu będzie się ładował (kod Zuzy) - jak dojdzie do 0, można ruszać
+                vehicle.Speed = 15; //TODO: tutaj przypisujemy szybkość - czyli własciwie to ile czasu będzie się ładował (kod Zuzy) - jak dojdzie do 0, można ruszać
             }
             else if (vehicle.Speed < CalculationConsts.EPSILON && !vehicle.IsOnStop && vehicle.IsIntersectionReached(out tramIntersection))
             {
-                if (tramIntersection.CurrentVehicle == null && tramIntersection.Vehicles.Count == 0)
+                if ((tramIntersection.CurrentVehicle == null && tramIntersection.Vehicles.Count == 0) || tramIntersection.CurrentVehicle.Equals(vehicle))
                 {
                     tramIntersection.CurrentVehicle = vehicle;
-                }
-
-                if (tramIntersection.CurrentVehicle.Equals(vehicle))
-                {
-                    vehicle.Speed += VehicleConsts.ACCELERATION * deltaTime;
                     vehicle.CurrentIntersection = tramIntersection;
+                    vehicle.Speed += VehicleConsts.ACCELERATION * deltaTime;
                 }
                 else if (!tramIntersection.Vehicles.Any(v => v.Equals(vehicle)))
                 {
                     tramIntersection.Vehicles.Enqueue(vehicle);
                 }
             }
-            else if (vehicle.CurrentIntersection != null)
+            else if (vehicle.Speed < CalculationConsts.EPSILON && !vehicle.IsOnStop && vehicle.IsOnLightsAndHasGreenLight())
             {
-                if (vehicle.Speed < VehicleConsts.MAX_CROSS_SPEED)
-                {
-                    vehicle.Speed += VehicleConsts.ACCELERATION * deltaTime;
-                }
-                else
-                {
-                    vehicle.Speed -= VehicleConsts.ACCELERATION * deltaTime;
-                }
+                vehicle.Speed += VehicleConsts.ACCELERATION * deltaTime;
             }
             //When is on stop, check if can run 
             else if (vehicle.IsOnStop)
@@ -94,10 +84,9 @@ namespace Tram.Controller.Controllers
                     vehicle.Speed -= VehicleConsts.ACCELERATION * deltaTime;
                 }
             }
-            //Check if there is any obstacle on road (intersection, stop)
-            else if (!vehicle.IsStraightRoad(out distance))
+            else if (vehicle.CurrentIntersection != null)
             {
-                if (distance > VehicleConsts.DISTANCE_TO_MAX_CROSS_SPEED && vehicle.Speed < VehicleConsts.MAX_CROSS_SPEED)
+                if (vehicle.Speed < VehicleConsts.MAX_CROSS_SPEED)
                 {
                     vehicle.Speed += VehicleConsts.ACCELERATION * deltaTime;
                 }
@@ -106,16 +95,14 @@ namespace Tram.Controller.Controllers
                     vehicle.Speed -= VehicleConsts.ACCELERATION * deltaTime;
                 }
             }
-            else if (vehicle.IsAnyVehicleClose(vehicles, out distance))
+            else if (vehicle.IsAnyVehicleClose(vehicles, deltaTime))
             {
-                if (distance > VehicleConsts.DISTANCE_TO_MAX_CROSS_SPEED && vehicle.Speed < VehicleConsts.MAX_CROSS_SPEED)
-                {
-                    vehicle.Speed += VehicleConsts.ACCELERATION * deltaTime;
-                }
-                else
-                {
-                    vehicle.Speed -= VehicleConsts.ACCELERATION * deltaTime;
-                }
+                vehicle.Speed -= VehicleConsts.ACCELERATION * deltaTime;
+            }
+            //Check if there is any obstacle on road (intersection, stop)
+            else if (!vehicle.IsStraightRoad(deltaTime) && !vehicle.IsOnLightsAndHasGreenLight())
+            {
+                vehicle.Speed -= VehicleConsts.ACCELERATION * deltaTime;
             }
             else if (vehicle.Speed < VehicleConsts.MAX_SPEED)
             {
@@ -129,13 +116,13 @@ namespace Tram.Controller.Controllers
             vehicle.NormalizeSpeed();
         }
 
-        private void CalculatePosition(Vehicle vehicle, List<Node> map, float deltaTime)
+        private void CalculatePosition(Vehicle vehicle, float prevSpeed)
         {
-            float translation = vehicle.Speed * deltaTime;
+            float translation = Math.Abs(vehicle.Speed * vehicle.Speed - prevSpeed * prevSpeed) / (2 * VehicleConsts.ACCELERATION);
             if (vehicle.Position.Node2 != null)
             {
-                float distanceToNextPoint = 0;
-                if ((distanceToNextPoint = vehicle.DistanceTo(vehicle.Position.Node2)) > translation)
+                float distanceToNextPoint = vehicle.DistanceTo(vehicle.Position.Node2);
+                if (distanceToNextPoint > translation)
                 {
                     vehicle.Position.Displacement += translation * 100 / vehicle.Position.Node1.GetDistanceToChild(vehicle.Position.Node2);
                 }

@@ -1,53 +1,53 @@
 ﻿using Microsoft.DirectX;
 using System;
+using System.Device.Location;
 using Tram.Common.Consts;
 
 namespace Tram.Common.Helpers
 {
     public static class GeometryHelper
     {
-        private const double PIx = 3.141592653589793;
-        private const double RADIUS = 6378.16;
-
         public static float GetDistance(Vector2 pA, Vector2 pB) => (float)Math.Sqrt((pB.X - pA.X) * (pB.X - pA.X) + (pB.Y - pA.Y) * (pB.Y - pA.Y));
 
         public static float GetRealDistance(Vector2 pA, Vector2 pB)
         {
-            double dlon = Radians(pB.Y - pA.Y);
-            double dlat = Radians(pB.X - pA.X);
-            double a = (Math.Sin(dlat / 2) * Math.Sin(dlat / 2)) + Math.Cos(Radians(pA.X)) * Math.Cos(Radians(pB.X)) * (Math.Sin(dlon / 2) * Math.Sin(dlon / 2));
-            double angle = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-            return (float)(angle * RADIUS) * 1000;
+            var aCoord = new GeoCoordinate(pA.Y, pA.X);
+            var bCoord = new GeoCoordinate(pB.Y, pB.X);
+            return (float)aCoord.GetDistanceTo(bCoord);
         }
 
         // Finds the straight line (|AC|) that is perpendicular to |AB| line and cuts point A, then returns 2 points located on this line with 'distance' from point A 
-        public static Tuple<Vector2, Vector2> GetPerpendicularPoints(Vector2 pA, Vector2 pB, float distance)
+        public static Tuple<Vector2, Vector2> GetPerpendicularPoints(float pAX, float pAY, float pBX, float pBY, float distance)
         {
-            if (Math.Abs(pA.Y - pB.Y) < CalculationConsts.EPSILON)
+            if (pAX.ToString().Contains("36,08216") && pBX.ToString().Contains("36,1642")) { var a = 3; }
+
+            if (Math.Abs(pAY - pBY) < CalculationConsts.EPSILON)
             {
-                return Tuple.Create(new Vector2(pA.X, pA.Y - distance), new Vector2(pA.X, pA.Y + distance));
+                return Tuple.Create(new Vector2(pAX, pAY - distance), new Vector2(pAX, pAY + distance));
             }
-            else if (Math.Abs(pA.X - pB.X) < CalculationConsts.EPSILON)
+            else if (Math.Abs(pAX - pBX) < CalculationConsts.EPSILON)
             {
-                return Tuple.Create(new Vector2(pA.X - distance, pA.Y), new Vector2(pA.X + distance, pA.Y));
+                return Tuple.Create(new Vector2(pAX - distance, pAY), new Vector2(pAX + distance, pAY));
             }
 
             // Computes |AB| lines equation
-            double aAB = (pB.Y - pA.Y) / (pB.X - pA.X);
-            //double bAB = ((-pA.X) * (pB.Y - pA.Y) - (-pA.Y) * (pB.X - pA.X)) / (pB.X - pA.X);
+            double aAB = (pBY - pAY) / (pBX - pAX);
+            //double bAB = ((-pAX) * (pBY - pAY) - (-pAY) * (pBX - pAX)) / (pBX - pAX);
             // Computes |AC| lines equation
             double aAC = (-1) / aAB;
-            double bAC = pA.Y - (aAC * pA.X);
+            double bAC = pAY - (aAC * pAX);
             // Computes quadratic equation for x-coordinates
-            double xA = 1 + Math.Pow(aAC, 2);
-            double xB = (-2) * pA.X + (2) * aAC * (bAC - pA.Y);
-            double xC = Math.Pow(pA.X, 2) + Math.Pow(bAC - pA.Y, 2) - Math.Pow(distance, 2);
-            double delta = Math.Pow(xB, 2) - 4 * xA * xC;
+            double xA = 1 + aAC * aAC;
+            double xB = (-2) * pAX + (2) * aAC * (bAC - pAY);
+            double xC = pAX * pAX + (bAC - pAY) * (bAC - pAY) - distance * distance;
+            double delta = xB * xB - 4 * xA * xC;
             float x1 = (float)((-xB - Math.Sqrt(delta)) / (2 * xA));
             float x2 = (float)((-xB + Math.Sqrt(delta)) / (2 * xA));
             // Computes y-coordinates
             float y1 = (float)(aAC * x1 + bAC);
             float y2 = (float)(aAC * x2 + bAC);
+            if (float.IsNaN(x1) || float.IsNaN(x2) || float.IsNaN(y1) || float.IsNaN(y2)) {
+                int asdasd = 23; }
 
             return Tuple.Create(new Vector2(x1, y1), new Vector2(x2, y2));
         }
@@ -74,8 +74,8 @@ namespace Tram.Common.Helpers
             return new Vector2(cX, cY);
         }
 
-        private static double Radians(double x) => x * PIx / 180;
+        private static double Radians(double x) => x * Math.PI / 180;
 
-        private static double Degrees(double x) => x * 180 / PIx;
+        private static double Degrees(double x) => x * 180 / Math.PI;
     }
 }

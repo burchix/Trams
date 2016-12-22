@@ -5,6 +5,9 @@ using System.Drawing;
 using System.Windows.Forms;
 using Tram.Common.Consts;
 using Tram.Simulation.Properties;
+using Tram.Controller.Controllers;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace Tram.Simulation
 {
@@ -14,7 +17,12 @@ namespace Tram.Simulation
 
         private Vector3 cameraPosition, cameraTarget;
         private Point lastClickedMouseLocation;
-        
+
+        private DateTime lastUpdateTime;
+        private long lastVehiclesHashCode;
+        private List<string> vehiclesIds;
+        private List<string> removedVehiclesIds;
+
         public MainForm()
         {
             InitializeComponent();
@@ -23,11 +31,14 @@ namespace Tram.Simulation
 
             // Set handlers
             renderPanel.MouseWheel += RenderPanel_MouseWheel;
+
             // Set variables
             cameraPosition = new Vector3(0, 0, ViewConsts.START_CAMERA_Z);
             cameraTarget = new Vector3(0, 0, 0);
 
-            speedTrackBar.TickFrequency = 10;
+            lastUpdateTime = DateTime.Now;
+            vehiclesIds = new List<string>();
+            removedVehiclesIds = new List<string>();
         }
 
         public void SetLanguage()
@@ -51,7 +62,33 @@ namespace Tram.Simulation
             }
         }
 
-        public void Render(Action<Device> renderAction)
+        public void Update(MainController controller)
+        {
+            if ((DateTime.Now - lastUpdateTime).TotalSeconds > CalculationConsts.INTERFACE_REFRESH_TIME_INTERVAL)
+            {
+                lastUpdateTime = DateTime.Now;
+
+                var ids = controller.Vehicles.Select(v => v.Id);
+                var hashcode = ids.Select(id => (long)id.GetHashCode()).Sum();
+                if (lastVehiclesHashCode != hashcode)
+                {
+                    removedVehiclesIds.AddRange(vehiclesIds.Where(v => !ids.Contains(v)));
+                    vehiclesIds.Clear();
+                    vehiclesIds.AddRange(ids);
+                    lastVehiclesHashCode = hashcode;
+
+                    listView1.Items.Clear();
+                    vehiclesIds.ForEach(v => listView1.Items.Add(v));
+                    removedVehiclesIds.ForEach(v => listView1.Items.Add(v));
+                    for (int i = vehiclesIds.Count; i < removedVehiclesIds.Count + vehiclesIds.Count; i++)
+                    {
+                        listView1.Items[i].ForeColor = Color.Red;
+                    }
+                }
+            }
+        }
+
+        public void Render(Action<Device, Vector3> renderAction)
         {
             device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, renderPanel.Width / renderPanel.Height, 1f, 1000f);
             device.Transform.View = Matrix.LookAtLH(cameraPosition, cameraTarget, new Vector3(0, 1, 0));
@@ -65,7 +102,7 @@ namespace Tram.Simulation
             device.VertexFormat = CustomVertex.PositionColored.Format;
 
             //Invoke render action
-            renderAction(device);
+            renderAction(device, cameraPosition);
             
             device.EndScene();
             device.Present();
@@ -80,9 +117,9 @@ namespace Tram.Simulation
             {
                 cameraPosition.Z -= ViewConsts.ZOOM_OFFSET;
             }
-            else if (cameraPosition.Z > 2)
+            else if (cameraPosition.Z > 1 + (ViewConsts.ZOOM_OFFSET / 20))
             {
-                cameraPosition.Z -= 1;
+                cameraPosition.Z -= ViewConsts.ZOOM_OFFSET / 20;
             }
         }
 
@@ -90,11 +127,16 @@ namespace Tram.Simulation
         {
             if (cameraPosition.Z < ViewConsts.ZOOM_OFFSET)
             {
-                cameraPosition.Z += 1;
+                cameraPosition.Z += ViewConsts.ZOOM_OFFSET / 20;
             }
             else if (cameraPosition.Z < ViewConsts.START_CAMERA_Z * 1.5)
             {
                 cameraPosition.Z += ViewConsts.ZOOM_OFFSET;
+            }
+
+            if (cameraPosition.Z > ViewConsts.START_CAMERA_Z * 1.5)
+            {
+                cameraPosition.Z = ViewConsts.START_CAMERA_Z * 1.5f;
             }
         }
 

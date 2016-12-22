@@ -2,7 +2,7 @@
 
 namespace Tram.Common.Models
 {
-    public class TramsIntersection : ModelBase
+    public class TramIntersection : ModelBase
     {
         public List<Node> Nodes { get; set; }
 

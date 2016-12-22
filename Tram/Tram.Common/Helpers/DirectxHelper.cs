@@ -30,8 +30,8 @@ namespace Tram.Common.Helpers
 
         public static CustomVertex.PositionColored[] CreateLine(float pX1, float pY1, float pX2, float pY2, int color, float thickness)
         {
-            var aLine = GeometryHelper.GetPerpendicularPoints(new Vector2(pX1, pY1), new Vector2(pX2, pY2), thickness);
-            var bLine = GeometryHelper.GetPerpendicularPoints(new Vector2(pX2, pY2), new Vector2(pX1, pY1), thickness);
+            var aLine = GeometryHelper.GetPerpendicularPoints(pX1, pY1, pX2, pY2, thickness);
+            var bLine = GeometryHelper.GetPerpendicularPoints(pX2, pY2, pX1, pY1, thickness);
 
             CustomVertex.PositionColored[] vertex = new CustomVertex.PositionColored[4];
             vertex[0].Position = aLine.Item1.ToVector3();

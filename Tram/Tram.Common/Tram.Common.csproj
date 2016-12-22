@@ -37,6 +37,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Device" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -58,11 +59,11 @@
     <Compile Include="Helpers\DirectxHelper.cs" />
     <Compile Include="Helpers\GeometryHelper.cs" />
     <Compile Include="Helpers\TimeHelper.cs" />
-    <Compile Include="Models\CarsIntersection.cs" />
+    <Compile Include="Models\CarIntersection.cs" />
     <Compile Include="Models\ModelBase.cs" />
     <Compile Include="Models\TramLine.cs" />
     <Compile Include="Models\Node.cs" />
-    <Compile Include="Models\TramsIntersection.cs" />
+    <Compile Include="Models\TramIntersection.cs" />
     <Compile Include="Models\Vehicle.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -20,7 +20,7 @@ namespace Tram.Common.Models
 
         public Node LastVisitedStop { get; set; }
 
-        public TramsIntersection CurrentIntersection { get; set; }
+        public TramIntersection CurrentIntersection { get; set; }
 
         public List<Node> VisitedNodes { get; set; }
 

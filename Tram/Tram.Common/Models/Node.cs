@@ -10,9 +10,12 @@ namespace Tram.Common.Models
 
         public NodeType Type { get; set; }
 
-        public TramsIntersection Intersection { get; set; }
+        public TramIntersection Intersection { get; set; }
 
         public bool IsUnderground { get; set; }
+
+        //Using only when node is car intersection
+        public LightState LightState { get; set; }
 
         public Next Child { get; set; }
 

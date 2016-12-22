@@ -41,6 +41,8 @@
             this.pauseButton = new System.Windows.Forms.Panel();
             this.speedTrackBar = new System.Windows.Forms.TrackBar();
             this.stopButton = new System.Windows.Forms.Panel();
+            this.listView1 = new System.Windows.Forms.ListView();
+            this.rightPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.speedTrackBar)).BeginInit();
             this.SuspendLayout();
             // 
@@ -49,7 +51,8 @@
             this.rightPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.rightPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.rightPanel.Location = new System.Drawing.Point(806, 12);
+            this.rightPanel.Controls.Add(this.listView1);
+            this.rightPanel.Location = new System.Drawing.Point(787, 12);
             this.rightPanel.Name = "rightPanel";
             this.rightPanel.Size = new System.Drawing.Size(298, 715);
             this.rightPanel.TabIndex = 0;
@@ -62,7 +65,7 @@
             this.renderPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.renderPanel.Location = new System.Drawing.Point(12, 12);
             this.renderPanel.Name = "renderPanel";
-            this.renderPanel.Size = new System.Drawing.Size(734, 715);
+            this.renderPanel.Size = new System.Drawing.Size(715, 715);
             this.renderPanel.TabIndex = 1;
             this.renderPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.renderPanel_MouseMove);
             // 
@@ -73,7 +76,7 @@
             this.zoomInButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("zoomInButton.BackgroundImage")));
             this.zoomInButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.zoomInButton.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.zoomInButton.Location = new System.Drawing.Point(752, 12);
+            this.zoomInButton.Location = new System.Drawing.Point(733, 12);
             this.zoomInButton.Name = "zoomInButton";
             this.zoomInButton.Size = new System.Drawing.Size(48, 48);
             this.zoomInButton.TabIndex = 4;
@@ -86,7 +89,7 @@
             this.zoomOutButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("zoomOutButton.BackgroundImage")));
             this.zoomOutButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.zoomOutButton.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.zoomOutButton.Location = new System.Drawing.Point(752, 66);
+            this.zoomOutButton.Location = new System.Drawing.Point(733, 66);
             this.zoomOutButton.Name = "zoomOutButton";
             this.zoomOutButton.Size = new System.Drawing.Size(48, 48);
             this.zoomOutButton.TabIndex = 5;
@@ -99,7 +102,7 @@
             this.zoomOriginalButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("zoomOriginalButton.BackgroundImage")));
             this.zoomOriginalButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.zoomOriginalButton.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.zoomOriginalButton.Location = new System.Drawing.Point(752, 129);
+            this.zoomOriginalButton.Location = new System.Drawing.Point(733, 129);
             this.zoomOriginalButton.Name = "zoomOriginalButton";
             this.zoomOriginalButton.Size = new System.Drawing.Size(48, 48);
             this.zoomOriginalButton.TabIndex = 5;
@@ -112,7 +115,7 @@
             this.centerScreenButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("centerScreenButton.BackgroundImage")));
             this.centerScreenButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.centerScreenButton.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.centerScreenButton.Location = new System.Drawing.Point(752, 183);
+            this.centerScreenButton.Location = new System.Drawing.Point(733, 183);
             this.centerScreenButton.Name = "centerScreenButton";
             this.centerScreenButton.Size = new System.Drawing.Size(48, 48);
             this.centerScreenButton.TabIndex = 5;
@@ -125,7 +128,7 @@
             this.settingsButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("settingsButton.BackgroundImage")));
             this.settingsButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.settingsButton.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.settingsButton.Location = new System.Drawing.Point(752, 679);
+            this.settingsButton.Location = new System.Drawing.Point(733, 679);
             this.settingsButton.Name = "settingsButton";
             this.settingsButton.Size = new System.Drawing.Size(48, 48);
             this.settingsButton.TabIndex = 6;
@@ -137,7 +140,7 @@
             this.aboutUsButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("aboutUsButton.BackgroundImage")));
             this.aboutUsButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.aboutUsButton.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.aboutUsButton.Location = new System.Drawing.Point(752, 625);
+            this.aboutUsButton.Location = new System.Drawing.Point(733, 625);
             this.aboutUsButton.Name = "aboutUsButton";
             this.aboutUsButton.Size = new System.Drawing.Size(48, 48);
             this.aboutUsButton.TabIndex = 7;
@@ -192,12 +195,21 @@
             this.stopButton.Size = new System.Drawing.Size(48, 48);
             this.stopButton.TabIndex = 9;
             // 
+            // listView1
+            // 
+            this.listView1.Location = new System.Drawing.Point(3, -1);
+            this.listView1.Name = "listView1";
+            this.listView1.Size = new System.Drawing.Size(290, 700);
+            this.listView1.TabIndex = 0;
+            this.listView1.UseCompatibleStateImageBehavior = false;
+            this.listView1.View = System.Windows.Forms.View.List;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(1116, 793);
+            this.ClientSize = new System.Drawing.Size(1097, 793);
             this.Controls.Add(this.stopButton);
             this.Controls.Add(this.speedTrackBar);
             this.Controls.Add(this.pauseButton);
@@ -211,11 +223,13 @@
             this.Controls.Add(this.rightPanel);
             this.Controls.Add(this.zoomInButton);
             this.Cursor = System.Windows.Forms.Cursors.Default;
+            this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.Text = "Form1";
+            this.rightPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.speedTrackBar)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -236,5 +250,6 @@
         private System.Windows.Forms.Panel pauseButton;
         private System.Windows.Forms.TrackBar speedTrackBar;
         private System.Windows.Forms.Panel stopButton;
+        private System.Windows.Forms.ListView listView1;
     }
 }

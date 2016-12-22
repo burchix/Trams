@@ -15,13 +15,13 @@ namespace Tram.Simulation
         static void Main()
         {
             MainController controller = Kernel.Get<MainController>();
-            controller.StartApplication(TimeHelper.GetTime("05:08"), 1);
+            controller.StartSimulation(TimeHelper.GetTime("07:30"), 15);
 
             using (MainForm form = new MainForm())
             {
                 //int screenWidth = Screen.PrimaryScreen.Bounds.Width;
                 int screenHeight = Screen.PrimaryScreen.Bounds.Height - 60;
-                form.Size = new System.Drawing.Size(screenHeight * form.Width / form.Height, screenHeight );
+                form.Size = new System.Drawing.Size(screenHeight * form.Width / form.Height, screenHeight);
                 if (!form.InitializeGraphics())
                 {
                     MessageBox.Show("Could not initialize Direct3D.");
@@ -34,6 +34,7 @@ namespace Tram.Simulation
                 {
                     controller.Update();               
                     form.Render(controller.Render);
+                    form.Update(controller);
                     Application.DoEvents();
                 }
             }

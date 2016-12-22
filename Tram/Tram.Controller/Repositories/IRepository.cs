@@ -7,10 +7,12 @@ namespace Tram.Controller.Repositories
     {
         void LoadData(params string[] parameters);
 
-        List<TramsIntersection> GetTramsIntersections();
+        List<TramIntersection> GetTramIntersections();
 
         List<Node> GetMap();
 
         List<TramLine> GetLines();
+
+        List<CarIntersection> GetCarIntersections();
     }
 }

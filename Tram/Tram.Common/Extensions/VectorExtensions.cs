@@ -1,4 +1,5 @@
 ﻿using Microsoft.DirectX;
+using Tram.Common.Models;
 
 namespace Tram.Common.Extensions
 {

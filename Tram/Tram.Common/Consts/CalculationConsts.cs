@@ -2,13 +2,15 @@
 {
     public static class CalculationConsts
     {
-        public static float EPSILON = 0.00000001f;
+        public const float EPSILON = 0.00000001f;
 
         // m
-        public static float DISTANCE_EPSILON = 3f;
+        public const float DISTANCE_EPSILON = 4f;
 
-        public static float MAX_TIME_INTERVAL = 0.1f;
+        // s
+        public const float MAX_TIME_INTERVAL = 0.005f;
 
-        public static float MIN_TIME_INTERVAL = 0.01f;
+        // s
+        public const float INTERFACE_REFRESH_TIME_INTERVAL = 2f;
     }
 }
