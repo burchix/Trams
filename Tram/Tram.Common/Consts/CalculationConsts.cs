@@ -12,5 +12,8 @@
 
         // s
         public const float INTERFACE_REFRESH_TIME_INTERVAL = 2f;
+
+        // s
+        public const float ORANGE_LIGHT_INTERVAL = 4f;
     }
 }

@@ -30,6 +30,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.rightPanel = new System.Windows.Forms.Panel();
+            this.listView = new System.Windows.Forms.ListView();
             this.renderPanel = new System.Windows.Forms.Panel();
             this.zoomInButton = new System.Windows.Forms.Panel();
             this.zoomOutButton = new System.Windows.Forms.Panel();
@@ -41,7 +42,6 @@
             this.pauseButton = new System.Windows.Forms.Panel();
             this.speedTrackBar = new System.Windows.Forms.TrackBar();
             this.stopButton = new System.Windows.Forms.Panel();
-            this.listView1 = new System.Windows.Forms.ListView();
             this.rightPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.speedTrackBar)).BeginInit();
             this.SuspendLayout();
@@ -51,11 +51,22 @@
             this.rightPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.rightPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.rightPanel.Controls.Add(this.listView1);
+            this.rightPanel.Controls.Add(this.listView);
             this.rightPanel.Location = new System.Drawing.Point(787, 12);
             this.rightPanel.Name = "rightPanel";
             this.rightPanel.Size = new System.Drawing.Size(298, 715);
             this.rightPanel.TabIndex = 0;
+            // 
+            // listView
+            // 
+            this.listView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listView.Location = new System.Drawing.Point(0, 0);
+            this.listView.Name = "listView";
+            this.listView.Size = new System.Drawing.Size(296, 713);
+            this.listView.TabIndex = 0;
+            this.listView.UseCompatibleStateImageBehavior = false;
+            this.listView.View = System.Windows.Forms.View.List;
+            this.listView.Click += new System.EventHandler(this.listView_Click);
             // 
             // renderPanel
             // 
@@ -195,15 +206,6 @@
             this.stopButton.Size = new System.Drawing.Size(48, 48);
             this.stopButton.TabIndex = 9;
             // 
-            // listView1
-            // 
-            this.listView1.Location = new System.Drawing.Point(3, -1);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(290, 700);
-            this.listView1.TabIndex = 0;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.View = System.Windows.Forms.View.List;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -250,6 +252,6 @@
         private System.Windows.Forms.Panel pauseButton;
         private System.Windows.Forms.TrackBar speedTrackBar;
         private System.Windows.Forms.Panel stopButton;
-        private System.Windows.Forms.ListView listView1;
+        private System.Windows.Forms.ListView listView;
     }
 }

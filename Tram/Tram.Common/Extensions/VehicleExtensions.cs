@@ -1,10 +1,9 @@
-﻿using Microsoft.DirectX;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Tram.Common.Consts;
 using Tram.Common.Enums;
 using Tram.Common.Helpers;
+using Tram.Common.Interfaces;
 using Tram.Common.Models;
 
 namespace Tram.Common.Extensions
@@ -15,8 +14,8 @@ namespace Tram.Common.Extensions
         {
             var node1 = vehicle.Position.Node1;
             var node2 = vehicle.Position.Node2;
-            return (node1 != null && node1.Type == NodeType.TramStop && node1 != vehicle.LastVisitedStop && vehicle.DistanceTo(node1) <= CalculationConsts.DISTANCE_EPSILON && vehicle.Line.MainNodes.Any(mn => mn.Equals(node1))) ||
-                   (node2 != null && node2.Type == NodeType.TramStop && node2 != vehicle.LastVisitedStop && vehicle.DistanceTo(node2) <= CalculationConsts.DISTANCE_EPSILON && vehicle.Line.MainNodes.Any(mn => mn.Equals(node2)));
+            return (node1 != null && node1.Type == NodeType.TramStop && node1 != vehicle.LastVisitedStop && vehicle.RealDistanceTo(node1) <= CalculationConsts.DISTANCE_EPSILON && vehicle.Line.MainNodes.Any(mn => mn.Equals(node1))) ||
+                   (node2 != null && node2.Type == NodeType.TramStop && node2 != vehicle.LastVisitedStop && vehicle.RealDistanceTo(node2) <= CalculationConsts.DISTANCE_EPSILON && vehicle.Line.MainNodes.Any(mn => mn.Equals(node2)));
         }
 
         public static bool IsIntersectionReached(this Vehicle vehicle, out TramIntersection intersection)
@@ -38,24 +37,29 @@ namespace Tram.Common.Extensions
             return false;
         }
 
-        public static bool IsOnLightsAndHasGreenLight(this Vehicle vehicle)
+        public static bool IsOnLightsAndHasRedLight(this Vehicle vehicle, float deltaTime)
         {
-            if ((vehicle.Position.Node1.Type == NodeType.CarCross && vehicle.Position.Node1.LightState == LightState.Green && vehicle.DistanceTo(vehicle.Position.Node1) <= CalculationConsts.DISTANCE_EPSILON) ||
-                (vehicle.Position.Node2.Type == NodeType.CarCross && vehicle.Position.Node2.LightState == LightState.Green && vehicle.DistanceTo(vehicle.Position.Node2) <= CalculationConsts.DISTANCE_EPSILON))
+            if (vehicle.Position.Node2.Type == NodeType.CarCross && vehicle.Position.Node2.LightState != LightState.Green)
             {
-                return true;
+                float speed = vehicle.Speed + deltaTime * VehicleConsts.ACCELERATION;
+                float brakingDistance = (speed * speed) / (2 * VehicleConsts.ACCELERATION);
+                float distance = vehicle.RealDistanceTo(vehicle.Position.Node2) - 1;
+                if (vehicle.Position.Node2.LightState == LightState.Red)
+                {
+                    return distance <= brakingDistance;
+                }
+                else if (vehicle.Position.Node2.LightState == LightState.Orange)
+                {
+                    return distance >= brakingDistance;
+                }
             }
 
             return false;
         }
 
-        public static bool IsStillOnIntersection(this Vehicle vehicle) => vehicle.CurrentIntersection.Nodes.Any(n => (vehicle.DistanceTo(n) - VehicleConsts.LENGTH) < 0);
+        public static bool IsStillOnIntersection(this Vehicle vehicle) => vehicle.CurrentIntersection.Nodes.Any(n => (vehicle.RealDistanceTo(n) - VehicleConsts.LENGTH) < 0);
 
-        public static float DistanceTo(this Vehicle vehicle, Vehicle vehicle2) => vehicle.DistanceTo(vehicle2.Position.Coordinates);
-
-        public static float DistanceTo(this Vehicle vehicle, Node node) => vehicle.DistanceTo(node.Coordinates);
-
-        public static float DistanceTo(this Vehicle vehicle, Vector2 coordinates) => GeometryHelper.GetRealDistance(vehicle.Position.Coordinates, coordinates);
+        public static float RealDistanceTo(this Vehicle vehicle, IObjWithCoordinates point) => GeometryHelper.GetRealDistance(vehicle.Position.Coordinates, point.Coordinates);
 
         public static void NormalizeSpeed(this Vehicle vehicle)
         {
@@ -71,6 +75,10 @@ namespace Tram.Common.Extensions
 
         public static bool IsStraightRoad(this Vehicle vehicle, float deltaTime)
         {
+            if (vehicle.Id.Contains("2 (Salwator - Cmentarz Rakowicki) - 07:30"))
+            {
+                var a = 3;
+            }
             var node1 = vehicle.Position.Node1;
             if (node1.Type != NodeType.CarCross && StraightRoadCorrectStopPredicate(vehicle, node1))
             {
@@ -84,7 +92,7 @@ namespace Tram.Common.Extensions
             }
 
             float speed = vehicle.Speed + deltaTime * VehicleConsts.ACCELERATION;
-            float distance = vehicle.DistanceTo(node) - 1;
+            float distance = vehicle.RealDistanceTo(node) - 1;
             float brakingDistance = (speed * speed) / (2 * VehicleConsts.ACCELERATION);
 
             if (distance <= brakingDistance && StraightRoadCorrectStopPredicate(vehicle, node))
@@ -118,8 +126,8 @@ namespace Tram.Common.Extensions
             float brakingDistance = (speed * speed) / (2 * VehicleConsts.ACCELERATION);
 
             Vehicle result = vehicles.Where(v => !v.Equals(vehicle) &&
-                                                 vehicle.DistanceTo(v) <= (brakingDistance + VehicleConsts.SAFE_SPACE) &&
-                                                 //v.DistanceTo(v.Position.Node2) <= vehicle.DistanceTo(v.Position.Node2) && vehicle.DistanceTo(vehicle.Position.Node1) <= v.DistanceTo(vehicle.Position.Node1) && // check if object is ahead of vehicle
+                                                 vehicle.RealDistanceTo(v) <= (brakingDistance + VehicleConsts.SAFE_SPACE) &&
+                                                 v.RealDistanceTo(v.Position.Node2) <= vehicle.RealDistanceTo(v.Position.Node2) && vehicle.RealDistanceTo(vehicle.Position.Node1) <= v.RealDistanceTo(vehicle.Position.Node1) && // check if object is ahead of vehicle
                                                  v.VisitedNodes.Any(vn => vn.Equals(vehicle.Position.Node2)) &&
                                                  (v.Line.Equals(vehicle.Line) ||
                                                  v.VisitedNodes.Intersect(vehicle.VisitedNodes).Any()))
@@ -130,8 +138,11 @@ namespace Tram.Common.Extensions
 
         private static bool StraightRoadCorrectStopPredicate(Vehicle vehicle, Node node)
         {
-            return node != null && node.Type != NodeType.Normal &&
-                   (node.Type != NodeType.TramStop || (!vehicle.LastVisitedStop.Equals(node) && vehicle.Line.MainNodes.Any(n => n.Equals(node))));
+            return node != null && 
+                   node.Type == NodeType.TramStop && 
+                   !vehicle.LastVisitedStop.Equals(node) &&
+                   !vehicle.LastVisitedStops.Any(n => n.Equals(node)) &&
+                   vehicle.Line.MainNodes.Any(n => n.Equals(node));
         }
     }
 }

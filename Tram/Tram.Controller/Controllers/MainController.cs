@@ -45,9 +45,9 @@ namespace Tram.Controller.Controllers
             GetAndPrepareModels();
         }
 
-        public void Render(Device device, Vector3 cameraPosition)
+        public void Render(Device device, Vector3 cameraPosition, string selectedVehicleId)
         {
-            directxController.Render(device, cameraPosition, TimeHelper.GetTimeStr(actualRealTime));
+            directxController.Render(device, cameraPosition, selectedVehicleId, TimeHelper.GetTimeStr(actualRealTime));
         }
 
         public void Update()
@@ -64,8 +64,53 @@ namespace Tram.Controller.Controllers
 
             // Update trams
             vehiclesController.Update(deltaTime);
+            
+            StartNewCourses();
+                        
+            CheckCarIntersections(deltaTime);
+        }
 
-            // Run new trains
+        #endregion Public Methods
+
+        #region Private Methods
+
+        private void GetAndPrepareModels()
+        {
+            Lines = repository.GetLines();
+            Map = repository.GetMap();
+            CarIntersections = repository.GetCarIntersections();
+            Vehicles = new List<Vehicle>();
+            directxController.InitMap();
+        }
+
+        private void CheckCarIntersections(float deltaTime)
+        {
+            foreach (var intersection in CarIntersections)
+            {
+                intersection.TimeToChange -= deltaTime;
+                if (intersection.TimeToChange <= 0)
+                {
+                    if (intersection.Node.LightState == LightState.Green)
+                    {
+                        intersection.Node.LightState = LightState.Orange;
+                        intersection.TimeToChange = CalculationConsts.ORANGE_LIGHT_INTERVAL;
+                    }
+                    else if (intersection.Node.LightState == LightState.Orange)
+                    {
+                        intersection.Node.LightState = LightState.Red;
+                        intersection.TimeToChange = intersection.RedInterval;
+                    }
+                    else if(intersection.Node.LightState == LightState.Red)
+                    {
+                        intersection.Node.LightState = LightState.Green;
+                        intersection.TimeToChange = intersection.GreenInterval;
+                    }
+                }
+            }
+        }
+
+        private void StartNewCourses()
+        {
             List<Node> startPoints = new List<Node>();
             foreach (var line in Lines)
             {
@@ -87,7 +132,12 @@ namespace Tram.Controller.Controllers
                                 Speed = 0f,
                                 StartTime = actualRealTime,
                                 IsOnStop = line.MainNodes.First().Type == NodeType.TramStop,
-                                VisitedNodes = new List<Node>(),
+                                LastVisitedStops = new List<Node>(),
+                                VisitedNodes = new List<Node>()
+                                {
+                                    line.MainNodes.First(),
+                                    line.MainNodes.First().Child.Node
+                                },
                                 Position = new Vehicle.Location()
                                 {
                                     Node1 = line.MainNodes.First(),
@@ -102,38 +152,6 @@ namespace Tram.Controller.Controllers
                     }
                 }
             }
-
-            // Check car intersections
-            foreach (var intersection in CarIntersections)
-            {
-                intersection.TimeToChange -= deltaTime;
-                if (intersection.TimeToChange <=0 )
-                {
-                    if (intersection.Node.LightState == LightState.Green)
-                    {
-                        intersection.Node.LightState = LightState.Red;
-                        intersection.TimeToChange = intersection.RedInterval;
-                    }
-                    else
-                    {
-                        intersection.Node.LightState = LightState.Green;
-                        intersection.TimeToChange = intersection.GreenInterval;
-                    }
-                }
-            }
-        }
-
-        #endregion Public Methods
-
-        #region Private Methods
-
-        private void GetAndPrepareModels()
-        {
-            Lines = repository.GetLines();
-            Map = repository.GetMap();
-            CarIntersections = repository.GetCarIntersections();
-            Vehicles = new List<Vehicle>();
-            directxController.InitMap();
         }
 
         #endregion Private Methods

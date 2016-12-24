@@ -8,6 +8,7 @@ using Tram.Simulation.Properties;
 using Tram.Controller.Controllers;
 using System.Linq;
 using System.Collections.Generic;
+using Tram.Common.Models;
 
 namespace Tram.Simulation
 {
@@ -22,6 +23,7 @@ namespace Tram.Simulation
         private long lastVehiclesHashCode;
         private List<string> vehiclesIds;
         private List<string> removedVehiclesIds;
+        private string selectedVehicleId, lastSelectedVehicleId;
 
         public MainForm()
         {
@@ -40,6 +42,8 @@ namespace Tram.Simulation
             vehiclesIds = new List<string>();
             removedVehiclesIds = new List<string>();
         }
+
+        #region Public Methods
 
         public void SetLanguage()
         {
@@ -62,7 +66,7 @@ namespace Tram.Simulation
             }
         }
 
-        public void Update(MainController controller)
+        public void Update(MainController controller, DirectxController directxController)
         {
             if ((DateTime.Now - lastUpdateTime).TotalSeconds > CalculationConsts.INTERFACE_REFRESH_TIME_INTERVAL)
             {
@@ -77,18 +81,34 @@ namespace Tram.Simulation
                     vehiclesIds.AddRange(ids);
                     lastVehiclesHashCode = hashcode;
 
-                    listView1.Items.Clear();
-                    vehiclesIds.ForEach(v => listView1.Items.Add(v));
-                    removedVehiclesIds.ForEach(v => listView1.Items.Add(v));
+                    listView.Items.Clear();
+                    vehiclesIds.ForEach(v => listView.Items.Add(v));
+                    removedVehiclesIds.ForEach(v => listView.Items.Add(v));
                     for (int i = vehiclesIds.Count; i < removedVehiclesIds.Count + vehiclesIds.Count; i++)
                     {
-                        listView1.Items[i].ForeColor = Color.Red;
+                        listView.Items[i].ForeColor = Color.Red;
                     }
                 }
             }
+
+            if (lastSelectedVehicleId != selectedVehicleId)
+            {
+                Vehicle vehicle = controller.Vehicles.FirstOrDefault(v => v.Id.Equals(selectedVehicleId));
+                if (vehicle != null)
+                {
+                    cameraPosition = new Vector3(
+                        directxController.CalculateXPosition(vehicle.Position.Coordinates.X),
+                        directxController.CalculateYPosition(vehicle.Position.Coordinates.Y), 
+                        ViewConsts.SELECTED_VEHICLE_ZOOM_OFFSET);
+                    cameraTarget.X = cameraPosition.X;
+                    cameraTarget.Y = cameraPosition.Y;
+                }
+
+                lastSelectedVehicleId = selectedVehicleId;
+            }
         }
 
-        public void Render(Action<Device, Vector3> renderAction)
+        public void Render(Action<Device, Vector3, string> renderAction)
         {
             device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, renderPanel.Width / renderPanel.Height, 1f, 1000f);
             device.Transform.View = Matrix.LookAtLH(cameraPosition, cameraTarget, new Vector3(0, 1, 0));
@@ -102,12 +122,26 @@ namespace Tram.Simulation
             device.VertexFormat = CustomVertex.PositionColored.Format;
 
             //Invoke render action
-            renderAction(device, cameraPosition);
-            
+            renderAction(device, cameraPosition, selectedVehicleId);
+
             device.EndScene();
             device.Present();
             Invalidate();
         }
+
+        #endregion Public Methods
+
+        #region Private Handlers 
+
+        private void listView_Click(object sender, EventArgs e)
+        {
+            if (listView.SelectedItems != null)
+            {
+                selectedVehicleId = listView.SelectedItems.Count > 0 ? listView.SelectedItems[0].Text : null;
+            }
+        }
+
+        #endregion Private Handlers
 
         #region Map Transformation Methods
 

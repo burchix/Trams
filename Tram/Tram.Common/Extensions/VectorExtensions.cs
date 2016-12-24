@@ -1,5 +1,6 @@
 ﻿using Microsoft.DirectX;
-using Tram.Common.Models;
+using Tram.Common.Helpers;
+using Tram.Common.Interfaces;
 
 namespace Tram.Common.Extensions
 {
@@ -9,5 +10,10 @@ namespace Tram.Common.Extensions
         {
             return new Vector3(v2.X, v2.Y, 0);
         } 
+
+        public static float RealDistanceTo(this Vector2 v2, IObjWithCoordinates point)
+        {
+            return GeometryHelper.GetRealDistance(v2, point.Coordinates);
+        }
     }
 }

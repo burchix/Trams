@@ -1,10 +1,11 @@
 ﻿using Microsoft.DirectX;
 using System.Collections.Generic;
 using Tram.Common.Enums;
+using Tram.Common.Interfaces;
 
 namespace Tram.Common.Models
 {
-    public class Node : ModelBase
+    public class Node : ModelBase, IObjWithCoordinates
     {
         public Vector2 Coordinates { get; set; }
 

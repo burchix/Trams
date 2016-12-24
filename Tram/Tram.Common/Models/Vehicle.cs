@@ -1,10 +1,11 @@
 ﻿using Microsoft.DirectX;
 using System;
 using System.Collections.Generic;
+using Tram.Common.Interfaces;
 
 namespace Tram.Common.Models
 {
-    public class Vehicle : ModelBase
+    public class Vehicle : ModelBase, IObjWithCoordinates
     {
         public TramLine Line { get; set; }
         
@@ -20,9 +21,16 @@ namespace Tram.Common.Models
 
         public Node LastVisitedStop { get; set; }
 
+        public List<Node> LastVisitedStops { get; set; }
+
         public TramIntersection CurrentIntersection { get; set; }
 
         public List<Node> VisitedNodes { get; set; }
+
+        Vector2 IObjWithCoordinates.Coordinates
+        {
+            get { return Position.Coordinates; }
+        }
 
         public class Location
         {

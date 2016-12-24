@@ -3,6 +3,7 @@
     public enum LightState
     {
         Green,
-        Red
+        Red,
+        Orange
     }
 }

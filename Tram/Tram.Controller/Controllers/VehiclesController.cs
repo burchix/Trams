@@ -47,6 +47,10 @@ namespace Tram.Controller.Controllers
         private void CalculateSpeed(Vehicle vehicle, List<Vehicle> vehicles, float deltaTime)
         {
             TramIntersection tramIntersection;
+            if (vehicle.Id.Contains("8:38") && vehicle.Speed < CalculationConsts.EPSILON)
+            {
+                var a = 3;
+            }
             //Check if is on stop
             if (vehicle.Speed < CalculationConsts.EPSILON && !vehicle.IsOnStop && vehicle.IsBusStopReached())
             {
@@ -66,7 +70,7 @@ namespace Tram.Controller.Controllers
                     tramIntersection.Vehicles.Enqueue(vehicle);
                 }
             }
-            else if (vehicle.Speed < CalculationConsts.EPSILON && !vehicle.IsOnStop && vehicle.IsOnLightsAndHasGreenLight())
+            else if (vehicle.Speed < CalculationConsts.EPSILON && !vehicle.IsOnStop && !vehicle.IsOnLightsAndHasRedLight(deltaTime))
             {
                 vehicle.Speed += VehicleConsts.ACCELERATION * deltaTime;
             }
@@ -76,18 +80,8 @@ namespace Tram.Controller.Controllers
                 if (vehicle.Speed < CalculationConsts.EPSILON)
                 {
                     vehicle.IsOnStop = false;
-                    vehicle.LastVisitedStop = vehicle.Position.Node1 != null && vehicle.Position.Node1.Type == NodeType.TramStop ? vehicle.Position.Node1 : vehicle.Position.Node2;
-                    vehicle.Speed += VehicleConsts.ACCELERATION * deltaTime;
-                }
-                else
-                {
-                    vehicle.Speed -= VehicleConsts.ACCELERATION * deltaTime;
-                }
-            }
-            else if (vehicle.CurrentIntersection != null)
-            {
-                if (vehicle.Speed < VehicleConsts.MAX_CROSS_SPEED)
-                {
+                    vehicle.LastVisitedStop = vehicle.Position.Node1 != null && vehicle.Position.Node1.Type == NodeType.TramStop && vehicle.LastVisitedStop != vehicle.Position.Node1 ? vehicle.Position.Node1 : vehicle.Position.Node2;
+                    vehicle.LastVisitedStops.Add(vehicle.LastVisitedStop);
                     vehicle.Speed += VehicleConsts.ACCELERATION * deltaTime;
                 }
                 else
@@ -99,10 +93,25 @@ namespace Tram.Controller.Controllers
             {
                 vehicle.Speed -= VehicleConsts.ACCELERATION * deltaTime;
             }
-            //Check if there is any obstacle on road (intersection, stop)
-            else if (!vehicle.IsStraightRoad(deltaTime) && !vehicle.IsOnLightsAndHasGreenLight())
+            else if (vehicle.IsOnLightsAndHasRedLight(deltaTime))
             {
                 vehicle.Speed -= VehicleConsts.ACCELERATION * deltaTime;
+            }
+            //Check if there is any obstacle on road (intersection, stop)
+            else if (!vehicle.IsStraightRoad(deltaTime))
+            {
+                vehicle.Speed -= VehicleConsts.ACCELERATION * deltaTime;
+            }
+            else if (vehicle.CurrentIntersection != null)
+            {
+                if (vehicle.Speed < VehicleConsts.MAX_CROSS_SPEED)
+                {
+                    vehicle.Speed += VehicleConsts.ACCELERATION * deltaTime;
+                }
+                else
+                {
+                    vehicle.Speed -= VehicleConsts.ACCELERATION * deltaTime;
+                }
             }
             else if (vehicle.Speed < VehicleConsts.MAX_SPEED)
             {
@@ -118,10 +127,14 @@ namespace Tram.Controller.Controllers
 
         private void CalculatePosition(Vehicle vehicle, float prevSpeed)
         {
+            if (vehicle.Id.Contains("2 (Salwator - Cmentarz Rakowicki) - 07:30"))
+            {
+                var a = 3;
+            }
             float translation = Math.Abs(vehicle.Speed * vehicle.Speed - prevSpeed * prevSpeed) / (2 * VehicleConsts.ACCELERATION);
             if (vehicle.Position.Node2 != null)
             {
-                float distanceToNextPoint = vehicle.DistanceTo(vehicle.Position.Node2);
+                float distanceToNextPoint = vehicle.RealDistanceTo(vehicle.Position.Node2);
                 if (distanceToNextPoint > translation)
                 {
                     vehicle.Position.Displacement += translation * 100 / vehicle.Position.Node1.GetDistanceToChild(vehicle.Position.Node2);

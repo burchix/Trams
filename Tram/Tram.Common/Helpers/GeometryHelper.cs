@@ -17,10 +17,9 @@ namespace Tram.Common.Helpers
         }
 
         // Finds the straight line (|AC|) that is perpendicular to |AB| line and cuts point A, then returns 2 points located on this line with 'distance' from point A 
+        [Obsolete("Doesn't work well, use GetPerpendicularPointsWithDecimalOperations instead (ugly and slow, but good enough)")]
         public static Tuple<Vector2, Vector2> GetPerpendicularPoints(float pAX, float pAY, float pBX, float pBY, float distance)
         {
-            if (pAX.ToString().Contains("36,08216") && pBX.ToString().Contains("36,1642")) { var a = 3; }
-
             if (Math.Abs(pAY - pBY) < CalculationConsts.EPSILON)
             {
                 return Tuple.Create(new Vector2(pAX, pAY - distance), new Vector2(pAX, pAY + distance));
@@ -46,8 +45,37 @@ namespace Tram.Common.Helpers
             // Computes y-coordinates
             float y1 = (float)(aAC * x1 + bAC);
             float y2 = (float)(aAC * x2 + bAC);
-            if (float.IsNaN(x1) || float.IsNaN(x2) || float.IsNaN(y1) || float.IsNaN(y2)) {
-                int asdasd = 23; }
+
+            return Tuple.Create(new Vector2(x1, y1), new Vector2(x2, y2));
+        }
+
+        public static Tuple<Vector2, Vector2> GetPerpendicularPointsWithDecimalOperations(float pAX, float pAY, float pBX, float pBY, float distance)
+        {
+            if (Math.Abs(pAY - pBY) < CalculationConsts.EPSILON)
+            {
+                return Tuple.Create(new Vector2(pAX, pAY - distance), new Vector2(pAX, pAY + distance));
+            }
+            else if (Math.Abs(pAX - pBX) < CalculationConsts.EPSILON)
+            {
+                return Tuple.Create(new Vector2(pAX - distance, pAY), new Vector2(pAX + distance, pAY));
+            }
+
+            // Computes |AB| lines equation
+            decimal aAB = (decimal)(pBY - pAY) / (decimal)(pBX - pAX);
+            //double bAB = ((-pAX) * (pBY - pAY) - (-pAY) * (pBX - pAX)) / (pBX - pAX);
+            // Computes |AC| lines equation
+            decimal aAC = (-1) / aAB;
+            decimal bAC = (decimal)pAY - (aAC * (decimal)pAX);
+            // Computes quadratic equation for x-coordinates
+            decimal xA = 1 + aAC * aAC;
+            decimal xB = (-2) * (decimal)pAX + (2) * aAC * (bAC - (decimal)pAY);
+            decimal xC = (decimal)pAX * (decimal)pAX + (bAC - (decimal)pAY) * (bAC - (decimal)pAY) - (decimal)distance * (decimal)distance;
+            decimal delta = xB * xB - 4 * xA * xC;
+            float x1 = (float)((-xB - (decimal)Math.Sqrt((double)delta)) / (2 * xA));
+            float x2 = (float)((-xB + (decimal)Math.Sqrt((double)delta)) / (2 * xA));
+            // Computes y-coordinates
+            float y1 = (float)(aAC * (decimal)x1 + bAC);
+            float y2 = (float)(aAC * (decimal)x2 + bAC);
 
             return Tuple.Create(new Vector2(x1, y1), new Vector2(x2, y2));
         }

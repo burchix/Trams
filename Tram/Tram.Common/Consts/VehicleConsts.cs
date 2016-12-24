@@ -3,10 +3,10 @@
     public static class VehicleConsts
     {
         // m
-        public const int LENGTH = 42;
+        public const int LENGTH = 36;
 
         // m
-        public const float SAFE_SPACE = LENGTH * 1.2f;
+        public const float SAFE_SPACE = LENGTH * 1.4f;
 
         // km/h
         public const float MAX_SPEED = 50f;

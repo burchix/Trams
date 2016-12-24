@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Linq;
 using Tram.Common.Consts;
 using Tram.Common.Enums;
+using Tram.Common.Extensions;
 using Tram.Common.Helpers;
 using Tram.Common.Models;
 
@@ -46,6 +47,25 @@ namespace Tram.Controller.Controllers
 
             foreach (var node in mainController.Map)
             {
+                float pX = CalculateXPosition(node.Coordinates.X);
+                float pY = CalculateYPosition(node.Coordinates.Y);
+                if (node.Child != null)
+                {
+                    float pX2 = CalculateXPosition(node.Child.Node.Coordinates.X);
+                    float pY2 = CalculateYPosition(node.Child.Node.Coordinates.Y);
+                }
+                else if (node.Children != null)
+                {
+                    foreach (var child in node.Children)
+                    {
+                        float pX2 = CalculateXPosition(child.Node.Coordinates.X);
+                        float pY2 = CalculateYPosition(child.Node.Coordinates.Y);
+                    }
+                }
+            }
+
+            foreach (var node in mainController.Map)
+            {
                 float pX = CalculateXPosition(node.Coordinates.X); 
                 float pY = CalculateYPosition(node.Coordinates.Y);
                 if (node.Type != NodeType.CarCross)
@@ -78,15 +98,11 @@ namespace Tram.Controller.Controllers
             }
         }
 
-        public void Render(Device device, Vector3 cameraPosition, string time)
+        public void Render(Device device, Vector3 cameraPosition, string selectedVehicleId, string time)
         {
             if (!isDeviceInit)
             {
-                System.Drawing.Font systemfont = new System.Drawing.Font("Arial", 12f, System.Drawing.FontStyle.Regular);
-                text = new Microsoft.DirectX.Direct3D.Font(device, systemfont);
-                line = new Line(device);
-                lineVertexes = new Vector2[] { new Vector2(8, 8), new Vector2(55, 8), new Vector2(55, 31), new Vector2(8, 31), new Vector2(8, 8) };
-                isDeviceInit = true;
+                InitDevice(device);
             }
 
             //DRAW EDGES
@@ -101,69 +117,119 @@ namespace Tram.Controller.Controllers
                 device.DrawUserPrimitives(PrimitiveType.TriangleFan, ViewConsts.POINT_PRECISION, vertex);
             }
 
-            //DRAW VEHICLES
-            foreach (var vehicle in mainController.Vehicles)
-            {
-                float x = CalculateXPosition(vehicle.Position.Coordinates.X);
-                float y = CalculateYPosition(vehicle.Position.Coordinates.Y);
+            DrawVehicles(device, cameraPosition, selectedVehicleId);
 
-                device.DrawUserPrimitives(
-                    PrimitiveType.TriangleFan,
-                    ViewConsts.POINT_PRECISION,
-                    DirectxHelper.CreateCircle(x, y, Color.Red.ToArgb(), GetPointRadius(cameraPosition.Z), ViewConsts.POINT_PRECISION));
-
-                //float pX2 = CalculateXPosition(vehicle.Position.Node1.Coordinates.X);
-                //float pY2 = CalculateYPosition(vehicle.Position.Node1.Coordinates.Y);
-                //device.DrawUserPrimitives(
-                //    PrimitiveType.TriangleStrip, 
-                //    2,
-                //    DirectxHelper.CreateLine(x, y, pX2, pY2, Color.Red.ToArgb(), GetPointRadius(cameraPosition.Z)));
-
-                float pX2 = CalculateXPosition(vehicle.Position.Node1.Coordinates.X);
-                float pY2 = CalculateYPosition(vehicle.Position.Node1.Coordinates.Y);
-                float pX3 = CalculateXPosition(vehicle.Position.Node2.Coordinates.X);
-                float pY3 = CalculateYPosition(vehicle.Position.Node2.Coordinates.Y);
-
-                device.DrawUserPrimitives(
-                    PrimitiveType.TriangleStrip,
-                    2,
-                    DirectxHelper.CreateLine(pX2, pY2, pX3, pY3, Color.Red.ToArgb(), ViewConsts.POINT_RADIUS));
-            }
-
-            //DRAW CAR INTERSECTIONS
-            foreach (var intersection in mainController.CarIntersections)
-            {
-                float x = CalculateXPosition(intersection.Node.Coordinates.X);
-                float y = CalculateYPosition(intersection.Node.Coordinates.Y);
-
-                device.DrawUserPrimitives(
-                    PrimitiveType.TriangleFan,
-                    ViewConsts.POINT_PRECISION,
-                    DirectxHelper.CreateCircle(
-                        x, 
-                        y, 
-                        intersection.Node.LightState == LightState.Green ? Color.Green.ToArgb() : Color.Red.ToArgb(),
-                        ViewConsts.POINT_RADIUS * 2, 
-                        ViewConsts.POINT_PRECISION));
-            }
+            DrawCarInstersections(device);
 
             //DRAW TIME
             text.DrawText(null, time, new Point(12, 11), Color.Black);
             line.Draw(lineVertexes, Color.Black);
         }
 
-        #endregion Public Methods
-
-        #region Private Methods
-
-        private float CalculateXPosition(float originalX)
+        public float CalculateXPosition(float originalX)
         {
             return (100 - (originalX - minX) * 100 / (maxX - minX)) - 50; // X axis is swapped
         }
 
-        private float CalculateYPosition(float originalY)
+        public float CalculateYPosition(float originalY)
         {
             return (originalY - minY) * 100 / (maxX - minX) - (50 * (minY - maxY)) / (minX - maxX);
+        }
+
+        #endregion Public Methods
+
+        #region Private Methods
+        
+        private void InitDevice(Device device)
+        {
+            System.Drawing.Font systemfont = new System.Drawing.Font("Arial", 12f, System.Drawing.FontStyle.Regular);
+            text = new Microsoft.DirectX.Direct3D.Font(device, systemfont);
+            line = new Line(device);
+            lineVertexes = new Vector2[] { new Vector2(8, 8), new Vector2(55, 8), new Vector2(55, 31), new Vector2(8, 31), new Vector2(8, 8) };
+            isDeviceInit = true;
+        }
+
+        private void DrawVehicles(Device device, Vector3 cameraPosition, string selectedVehicleId)
+        {
+            Vehicle selectedVehicle = selectedVehicleId != null ? mainController.Vehicles.FirstOrDefault(v => v.Id.Equals(selectedVehicleId)) : null;
+            foreach (var vehicle in mainController.Vehicles)
+            {
+                float pX = CalculateXPosition(vehicle.Position.Coordinates.X);
+                float pY = CalculateYPosition(vehicle.Position.Coordinates.Y);
+                float thickness = GetPointRadius(cameraPosition.Z);
+                float selectedThickness = thickness * 1.7f;
+
+                if (vehicle.Equals(selectedVehicle))
+                {
+                    device.DrawUserPrimitives(PrimitiveType.TriangleFan, ViewConsts.POINT_PRECISION, DirectxHelper.CreateCircle(pX, pY, ViewConsts.SELECTED_COLOR.ToArgb(), selectedThickness, ViewConsts.POINT_PRECISION));
+                }
+
+                device.DrawUserPrimitives(PrimitiveType.TriangleFan, ViewConsts.POINT_PRECISION, DirectxHelper.CreateCircle(pX, pY, Color.Red.ToArgb(), thickness, ViewConsts.POINT_PRECISION));
+
+                float length = VehicleConsts.LENGTH;
+                int actualNodeIndex = vehicle.VisitedNodes.Count - 2;
+                Vector2 prevCoordinates = vehicle.Position.Coordinates;
+                float pX2, pY2;
+                while (length > 0)
+                {
+                    if (actualNodeIndex >= 0)
+                    {
+                        Node actualNode = vehicle.VisitedNodes[actualNodeIndex--];
+                        float distance = prevCoordinates.RealDistanceTo(actualNode);
+                        pX = CalculateXPosition(prevCoordinates.X);
+                        pY = CalculateYPosition(prevCoordinates.Y);
+                        if (distance >= length)
+                        {
+                            float displacement = (distance - length) * 100 / distance;
+                            var pos = GeometryHelper.GetLocactionBetween(displacement, actualNode.Coordinates, prevCoordinates);
+                            pX2 = CalculateXPosition(pos.X);
+                            pY2 = CalculateYPosition(pos.Y);
+                        }
+                        else
+                        {
+                            pX2 = CalculateXPosition(actualNode.Coordinates.X);
+                            pY2 = CalculateYPosition(actualNode.Coordinates.Y);
+                            prevCoordinates = actualNode.Coordinates;
+                        }
+
+                        if (vehicle.Equals(selectedVehicle))
+                        {
+                            var selectedTramTail = DirectxHelper.CreateLine(pX, pY, pX2, pY2, ViewConsts.SELECTED_COLOR.ToArgb(), selectedThickness);
+                            device.DrawUserPrimitives(PrimitiveType.TriangleStrip, 2, selectedTramTail);
+                        }
+
+                        var tramTail = DirectxHelper.CreateLine(pX, pY, pX2, pY2, Color.Red.ToArgb(), thickness);
+                        device.DrawUserPrimitives(PrimitiveType.TriangleStrip, 2, tramTail);
+
+                        length -= distance;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void DrawCarInstersections(Device device)
+        {
+            foreach (var intersection in mainController.CarIntersections)
+            {
+                float x = CalculateXPosition(intersection.Node.Coordinates.X);
+                float y = CalculateYPosition(intersection.Node.Coordinates.Y);
+                Color color = intersection.Node.LightState == LightState.Green ? Color.Green :
+                              intersection.Node.LightState == LightState.Orange ? Color.Orange : Color.Red;
+
+                device.DrawUserPrimitives(
+                    PrimitiveType.TriangleFan,
+                    ViewConsts.POINT_PRECISION,
+                    DirectxHelper.CreateCircle(
+                        x,
+                        y,
+                        color.ToArgb(),
+                        ViewConsts.POINT_RADIUS * 2,
+                        ViewConsts.POINT_PRECISION));
+            }
         }
 
         private float GetPointRadius(float cameraHeight)
