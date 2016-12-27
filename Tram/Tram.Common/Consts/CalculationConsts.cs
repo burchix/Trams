@@ -8,7 +8,9 @@
         public const float DISTANCE_EPSILON = 4f;
 
         // s
-        public const float MAX_TIME_INTERVAL = 0.005f;
+        public const float MAX_TIME_INTERVAL = 0.1f;
+        
+        public const int SAMPLES_COUNT = 20;
 
         // s
         public const float INTERFACE_REFRESH_TIME_INTERVAL = 2f;

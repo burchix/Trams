@@ -16,6 +16,7 @@ namespace Tram.Controller.Controllers
         private bool isDeviceInit;
 
         private MainController mainController;
+        private CapacityController capacityController;
         private List<CustomVertex.PositionColored[]> vertexes;
         private List<CustomVertex.PositionColored[]> edges;
 
@@ -38,6 +39,11 @@ namespace Tram.Controller.Controllers
             if (mainController == null)
             {
                 mainController = Kernel.Get<MainController>();
+            }
+
+            if (capacityController == null)
+            {
+                capacityController = Kernel.Get<CapacityController>();
             }
 
             minX = mainController.Map.Min(n => n.Coordinates.X);
@@ -154,6 +160,7 @@ namespace Tram.Controller.Controllers
             Vehicle selectedVehicle = selectedVehicleId != null ? mainController.Vehicles.FirstOrDefault(v => v.Id.Equals(selectedVehicleId)) : null;
             foreach (var vehicle in mainController.Vehicles)
             {
+                Color tramColor = capacityController.GetTramColor(vehicle.Passengers);
                 float pX = CalculateXPosition(vehicle.Position.Coordinates.X);
                 float pY = CalculateYPosition(vehicle.Position.Coordinates.Y);
                 float thickness = GetPointRadius(cameraPosition.Z);
@@ -164,7 +171,7 @@ namespace Tram.Controller.Controllers
                     device.DrawUserPrimitives(PrimitiveType.TriangleFan, ViewConsts.POINT_PRECISION, DirectxHelper.CreateCircle(pX, pY, ViewConsts.SELECTED_COLOR.ToArgb(), selectedThickness, ViewConsts.POINT_PRECISION));
                 }
 
-                device.DrawUserPrimitives(PrimitiveType.TriangleFan, ViewConsts.POINT_PRECISION, DirectxHelper.CreateCircle(pX, pY, Color.Red.ToArgb(), thickness, ViewConsts.POINT_PRECISION));
+                device.DrawUserPrimitives(PrimitiveType.TriangleFan, ViewConsts.POINT_PRECISION, DirectxHelper.CreateCircle(pX, pY, tramColor.ToArgb(), thickness, ViewConsts.POINT_PRECISION));
 
                 float length = VehicleConsts.LENGTH;
                 int actualNodeIndex = vehicle.VisitedNodes.Count - 2;
@@ -198,7 +205,7 @@ namespace Tram.Controller.Controllers
                             device.DrawUserPrimitives(PrimitiveType.TriangleStrip, 2, selectedTramTail);
                         }
 
-                        var tramTail = DirectxHelper.CreateLine(pX, pY, pX2, pY2, Color.Red.ToArgb(), thickness);
+                        var tramTail = DirectxHelper.CreateLine(pX, pY, pX2, pY2, tramColor.ToArgb(), thickness);
                         device.DrawUserPrimitives(PrimitiveType.TriangleStrip, 2, tramTail);
 
                         length -= distance;

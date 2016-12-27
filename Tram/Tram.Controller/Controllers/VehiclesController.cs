@@ -11,6 +11,7 @@ namespace Tram.Controller.Controllers
     public class VehiclesController
     {
         private MainController mainController;
+        private CapacityController capacityController;
 
         #region Public Methods
 
@@ -19,6 +20,11 @@ namespace Tram.Controller.Controllers
             if (mainController == null)
             {
                 mainController = Kernel.Get<MainController>();
+            }
+
+            if (capacityController == null)
+            {
+                capacityController = Kernel.Get<CapacityController>();
             }
 
             foreach (var vehicle in mainController.Vehicles)
@@ -50,7 +56,8 @@ namespace Tram.Controller.Controllers
             if (vehicle.Speed < CalculationConsts.EPSILON && !vehicle.IsOnStop && vehicle.IsBusStopReached())
             {
                 vehicle.IsOnStop = true;
-                vehicle.Speed = 15; //TODO: tutaj przypisujemy szybkość - czyli własciwie to ile czasu będzie się ładował (kod Zuzy) - jak dojdzie do 0, można ruszać
+                float timeToBoard = capacityController.SetTramCapacity(vehicle);
+                vehicle.Speed = 15; //TODO: tutaj przypisujemy szybkość - na podstawie czasu zapełnienia
             }
             else if (vehicle.Speed < CalculationConsts.EPSILON && !vehicle.IsOnStop && vehicle.IsIntersectionReached(out tramIntersection))
             {
@@ -150,9 +157,12 @@ namespace Tram.Controller.Controllers
                 }
             }
 
-            vehicle.Position.Coordinates = vehicle.Position.Node2 == null || vehicle.Position.Displacement < CalculationConsts.EPSILON ?
-                                           vehicle.Position.Node1.Coordinates :
-                                           GeometryHelper.GetLocactionBetween(vehicle.Position.Displacement, vehicle.Position.Node1.Coordinates, vehicle.Position.Node2.Coordinates);
+            if (translation > 0)
+            {
+                vehicle.Position.Coordinates = vehicle.Position.Node2 == null || vehicle.Position.Displacement < CalculationConsts.EPSILON ?
+                                               vehicle.Position.Node1.Coordinates :
+                                               GeometryHelper.GetLocactionBetween(vehicle.Position.Displacement, vehicle.Position.Node1.Coordinates, vehicle.Position.Node2.Coordinates);
+            }
 
             //Check intersection
             if (vehicle.CurrentIntersection != null && !vehicle.IsStillOnIntersection())

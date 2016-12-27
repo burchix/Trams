@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\CapacityController.cs" />
     <Compile Include="Controllers\DirectxController.cs" />
     <Compile Include="Controllers\MainController.cs" />
     <Compile Include="Controllers\VehiclesController.cs" />

@@ -15,6 +15,8 @@ namespace Tram.Controller
             ninjectKernel.Bind<DirectxController>().ToSelf().InSingletonScope();
             ninjectKernel.Bind<VehiclesController>().ToSelf().InSingletonScope();
             ninjectKernel.Bind<MainController>().ToSelf().InSingletonScope();
+            ninjectKernel.Bind<CapacityController>().ToSelf().InSingletonScope();
+
 
             ninjectKernel.Bind<IRepository>().To<FileRepository>().InSingletonScope();
         }

@@ -16,27 +16,26 @@ namespace Tram.Simulation
         {
             MainController controller = Kernel.Get<MainController>();
             DirectxController directxController = Kernel.Get<DirectxController>();
-            controller.StartSimulation(TimeHelper.GetTime("07:30"), 15);
+            controller.StartSimulation(TimeHelper.GetTime("07:30"), 2);
 
             using (MainForm form = new MainForm())
             {
                 //int screenWidth = Screen.PrimaryScreen.Bounds.Width;
                 int screenHeight = Screen.PrimaryScreen.Bounds.Height - 60;
                 form.Size = new System.Drawing.Size(screenHeight * form.Width / form.Height, screenHeight);
-                if (!form.InitializeGraphics())
-                {
-                    MessageBox.Show("Could not initialize Direct3D.");
-                    return;
-                }
-
+                form.InitializeGraphics();
                 form.Show();
-
+                
                 while (form.Created)
                 {
-                    controller.Update();
+                    controller.Update(); // UPDATE SIMULATION
+                    form.Render(controller.Render); //RENDER SIMULATION
                     form.Update(controller, directxController);
-                    form.Render(controller.Render);
-                    Application.DoEvents();
+                    try
+                    {
+                        Application.DoEvents();
+                    }
+                    catch { }
                 }
             }
         }
