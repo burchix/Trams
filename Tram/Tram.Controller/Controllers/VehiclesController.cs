@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Tram.Common.Consts;
 using Tram.Common.Enums;
@@ -47,10 +46,6 @@ namespace Tram.Controller.Controllers
         private void CalculateSpeed(Vehicle vehicle, List<Vehicle> vehicles, float deltaTime)
         {
             TramIntersection tramIntersection;
-            if (vehicle.Id.Contains("8:38") && vehicle.Speed < CalculationConsts.EPSILON)
-            {
-                var a = 3;
-            }
             //Check if is on stop
             if (vehicle.Speed < CalculationConsts.EPSILON && !vehicle.IsOnStop && vehicle.IsBusStopReached())
             {
@@ -59,20 +54,26 @@ namespace Tram.Controller.Controllers
             }
             else if (vehicle.Speed < CalculationConsts.EPSILON && !vehicle.IsOnStop && vehicle.IsIntersectionReached(out tramIntersection))
             {
+                if (vehicle.CurrentIntersection != null && !tramIntersection.Equals(vehicle.CurrentIntersection))
+                {
+                    DequeueIntersection(vehicle.CurrentIntersection);
+                    vehicle.CurrentIntersection = null;
+                }
+
                 if ((tramIntersection.CurrentVehicle == null && tramIntersection.Vehicles.Count == 0) || tramIntersection.CurrentVehicle.Equals(vehicle))
                 {
                     tramIntersection.CurrentVehicle = vehicle;
                     vehicle.CurrentIntersection = tramIntersection;
-                    vehicle.Speed += VehicleConsts.ACCELERATION * deltaTime;
+                    vehicle.Speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime, true);
                 }
                 else if (!tramIntersection.Vehicles.Any(v => v.Equals(vehicle)))
                 {
                     tramIntersection.Vehicles.Enqueue(vehicle);
                 }
             }
-            else if (vehicle.Speed < CalculationConsts.EPSILON && !vehicle.IsOnStop && !vehicle.IsOnLightsAndHasRedLight(deltaTime))
+            else if (vehicle.Speed < CalculationConsts.EPSILON && !vehicle.IsOnStop && vehicle.IsOnLights() && !vehicle.IsOnLightsAndHasRedLight(deltaTime))
             {
-                vehicle.Speed += VehicleConsts.ACCELERATION * deltaTime;
+                vehicle.Speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime, true);
             }
             //When is on stop, check if can run 
             else if (vehicle.IsOnStop)
@@ -82,44 +83,44 @@ namespace Tram.Controller.Controllers
                     vehicle.IsOnStop = false;
                     vehicle.LastVisitedStop = vehicle.Position.Node1 != null && vehicle.Position.Node1.Type == NodeType.TramStop && vehicle.LastVisitedStop != vehicle.Position.Node1 ? vehicle.Position.Node1 : vehicle.Position.Node2;
                     vehicle.LastVisitedStops.Add(vehicle.LastVisitedStop);
-                    vehicle.Speed += VehicleConsts.ACCELERATION * deltaTime;
+                    vehicle.Speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime, true);
                 }
                 else
                 {
-                    vehicle.Speed -= VehicleConsts.ACCELERATION * deltaTime;
+                    vehicle.Speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime, false);
                 }
             }
             else if (vehicle.IsAnyVehicleClose(vehicles, deltaTime))
             {
-                vehicle.Speed -= VehicleConsts.ACCELERATION * deltaTime;
+                vehicle.Speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime, false);
             }
-            else if (vehicle.IsOnLightsAndHasRedLight(deltaTime))
+            else if (vehicle.IsOnLights() && vehicle.IsOnLightsAndHasRedLight(deltaTime))
             {
-                vehicle.Speed -= VehicleConsts.ACCELERATION * deltaTime;
+                vehicle.Speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime, false);
             }
             //Check if there is any obstacle on road (intersection, stop)
             else if (!vehicle.IsStraightRoad(deltaTime))
             {
-                vehicle.Speed -= VehicleConsts.ACCELERATION * deltaTime;
+                vehicle.Speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime, false);
             }
             else if (vehicle.CurrentIntersection != null)
             {
                 if (vehicle.Speed < VehicleConsts.MAX_CROSS_SPEED)
                 {
-                    vehicle.Speed += VehicleConsts.ACCELERATION * deltaTime;
+                    vehicle.Speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime, true);
                 }
                 else
                 {
-                    vehicle.Speed -= VehicleConsts.ACCELERATION * deltaTime;
+                    vehicle.Speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime, false);
                 }
             }
             else if (vehicle.Speed < VehicleConsts.MAX_SPEED)
             {
-                vehicle.Speed += VehicleConsts.ACCELERATION * deltaTime;
+                vehicle.Speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime, true);
             }
             else
             {
-                vehicle.Speed -= VehicleConsts.ACCELERATION * deltaTime;
+                vehicle.Speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime, false);
             }
 
             vehicle.NormalizeSpeed();
@@ -127,11 +128,7 @@ namespace Tram.Controller.Controllers
 
         private void CalculatePosition(Vehicle vehicle, float prevSpeed)
         {
-            if (vehicle.Id.Contains("2 (Salwator - Cmentarz Rakowicki) - 07:30"))
-            {
-                var a = 3;
-            }
-            float translation = Math.Abs(vehicle.Speed * vehicle.Speed - prevSpeed * prevSpeed) / (2 * VehicleConsts.ACCELERATION);
+            float translation = PhysicsHelper.GetTranslation(prevSpeed, vehicle.Speed);
             if (vehicle.Position.Node2 != null)
             {
                 float distanceToNextPoint = vehicle.RealDistanceTo(vehicle.Position.Node2);
@@ -160,9 +157,14 @@ namespace Tram.Controller.Controllers
             //Check intersection
             if (vehicle.CurrentIntersection != null && !vehicle.IsStillOnIntersection())
             {
-                vehicle.CurrentIntersection.CurrentVehicle = vehicle.CurrentIntersection.Vehicles.Any() ? vehicle.CurrentIntersection.Vehicles.Dequeue() : null;
+                DequeueIntersection(vehicle.CurrentIntersection);
                 vehicle.CurrentIntersection = null;
             }
+        }
+
+        private void DequeueIntersection(TramIntersection intersection)
+        {
+            intersection.CurrentVehicle = intersection.Vehicles.Any() ? intersection.Vehicles.Dequeue() : null;
         }
 
         #endregion Private Methods

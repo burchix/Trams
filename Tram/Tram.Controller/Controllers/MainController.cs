@@ -92,10 +92,10 @@ namespace Tram.Controller.Controllers
                 {
                     if (intersection.Node.LightState == LightState.Green)
                     {
-                        intersection.Node.LightState = LightState.Orange;
+                        intersection.Node.LightState = LightState.Yellow;
                         intersection.TimeToChange = CalculationConsts.ORANGE_LIGHT_INTERVAL;
                     }
-                    else if (intersection.Node.LightState == LightState.Orange)
+                    else if (intersection.Node.LightState == LightState.Yellow)
                     {
                         intersection.Node.LightState = LightState.Red;
                         intersection.TimeToChange = intersection.RedInterval;

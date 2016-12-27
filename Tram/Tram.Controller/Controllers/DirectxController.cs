@@ -218,7 +218,7 @@ namespace Tram.Controller.Controllers
                 float x = CalculateXPosition(intersection.Node.Coordinates.X);
                 float y = CalculateYPosition(intersection.Node.Coordinates.Y);
                 Color color = intersection.Node.LightState == LightState.Green ? Color.Green :
-                              intersection.Node.LightState == LightState.Orange ? Color.Orange : Color.Red;
+                              intersection.Node.LightState == LightState.Yellow ? Color.Gold : Color.Red;
 
                 device.DrawUserPrimitives(
                     PrimitiveType.TriangleFan,

@@ -58,6 +58,7 @@
     <Compile Include="Extensions\VehicleExtensions.cs" />
     <Compile Include="Helpers\DirectxHelper.cs" />
     <Compile Include="Helpers\GeometryHelper.cs" />
+    <Compile Include="Helpers\PhysicsHelper.cs" />
     <Compile Include="Helpers\TimeHelper.cs" />
     <Compile Include="Interfaces\IObjWithCoordinates.cs" />
     <Compile Include="Models\CarIntersection.cs" />

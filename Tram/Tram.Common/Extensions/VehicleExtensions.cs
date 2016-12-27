@@ -37,18 +37,20 @@ namespace Tram.Common.Extensions
             return false;
         }
 
+        public static bool IsOnLights(this Vehicle vehicle) => vehicle.Position.Node2.Type == NodeType.CarCross;
+
         public static bool IsOnLightsAndHasRedLight(this Vehicle vehicle, float deltaTime)
         {
             if (vehicle.Position.Node2.Type == NodeType.CarCross && vehicle.Position.Node2.LightState != LightState.Green)
             {
-                float speed = vehicle.Speed + deltaTime * VehicleConsts.ACCELERATION;
-                float brakingDistance = (speed * speed) / (2 * VehicleConsts.ACCELERATION);
+                float speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime);
+                float brakingDistance = PhysicsHelper.GetBrakingDistance(speed);
                 float distance = vehicle.RealDistanceTo(vehicle.Position.Node2) - 1;
                 if (vehicle.Position.Node2.LightState == LightState.Red)
                 {
                     return distance <= brakingDistance;
                 }
-                else if (vehicle.Position.Node2.LightState == LightState.Orange)
+                else if (vehicle.Position.Node2.LightState == LightState.Yellow)
                 {
                     return distance >= brakingDistance;
                 }
@@ -75,12 +77,8 @@ namespace Tram.Common.Extensions
 
         public static bool IsStraightRoad(this Vehicle vehicle, float deltaTime)
         {
-            if (vehicle.Id.Contains("2 (Salwator - Cmentarz Rakowicki) - 07:30"))
-            {
-                var a = 3;
-            }
             var node1 = vehicle.Position.Node1;
-            if (node1.Type != NodeType.CarCross && StraightRoadCorrectStopPredicate(vehicle, node1))
+            if (node1 != null && CorrectStopPredicate(vehicle, node1))
             {
                 return false;
             }
@@ -91,16 +89,16 @@ namespace Tram.Common.Extensions
                 return true;
             }
 
-            float speed = vehicle.Speed + deltaTime * VehicleConsts.ACCELERATION;
+            float speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime);
             float distance = vehicle.RealDistanceTo(node) - 1;
-            float brakingDistance = (speed * speed) / (2 * VehicleConsts.ACCELERATION);
-
-            if (distance <= brakingDistance && StraightRoadCorrectStopPredicate(vehicle, node))
+            float brakingDistance = PhysicsHelper.GetBrakingDistance(speed);
+            
+            if (IsNotStraightRoadPredicate(vehicle, node, distance, brakingDistance))
             {
                 return false;
             }
 
-            while (distance < brakingDistance)
+            while (distance <= brakingDistance)
             {
                 var newNode = vehicle.Line.GetNextNode(node);
                 if (newNode == null)
@@ -109,21 +107,25 @@ namespace Tram.Common.Extensions
                 }
 
                 distance += newNode.Distance;
-                if (distance <= brakingDistance && newNode.Node.Type != NodeType.Normal)
+                node = newNode.Node;
+                if (IsNotStraightRoadPredicate(vehicle, node, distance, brakingDistance))
                 {
                     return false;
                 }
-
-                node = newNode.Node;
             }
 
             return true;
         }
 
+        private static bool IsNotStraightRoadPredicate(Vehicle vehicle, Node node, float distance, float brakingDistance) => 
+                            distance <= brakingDistance && 
+                            node.Type != NodeType.Normal && 
+                            (CorrectTramCrossPredicate(vehicle, node) || CorrectStopPredicate(vehicle, node) || CorrectNotGreenCarCrossPredicate(node));
+
         public static bool IsAnyVehicleClose(this Vehicle vehicle, List<Vehicle> vehicles, float deltaTime)
         {
-            float speed = vehicle.Speed + deltaTime * VehicleConsts.ACCELERATION;
-            float brakingDistance = (speed * speed) / (2 * VehicleConsts.ACCELERATION);
+            float speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime);
+            float brakingDistance = PhysicsHelper.GetBrakingDistance(speed);
 
             Vehicle result = vehicles.Where(v => !v.Equals(vehicle) &&
                                                  vehicle.RealDistanceTo(v) <= (brakingDistance + VehicleConsts.SAFE_SPACE) &&
@@ -136,13 +138,23 @@ namespace Tram.Common.Extensions
             return result != null;
         }
 
-        private static bool StraightRoadCorrectStopPredicate(Vehicle vehicle, Node node)
+        private static bool CorrectStopPredicate(Vehicle vehicle, Node node)
         {
-            return node != null && 
-                   node.Type == NodeType.TramStop && 
+            return node.Type == NodeType.TramStop && 
                    !vehicle.LastVisitedStop.Equals(node) &&
                    !vehicle.LastVisitedStops.Any(n => n.Equals(node)) &&
                    vehicle.Line.MainNodes.Any(n => n.Equals(node));
+        }
+
+        private static bool CorrectTramCrossPredicate(Vehicle vehicle, Node node)
+        {
+            return node.Type == NodeType.TramCross && 
+                   (vehicle.CurrentIntersection == null || !vehicle.CurrentIntersection.Equals(node.Intersection));
+        }
+
+        private static bool CorrectNotGreenCarCrossPredicate(Node node)
+        {
+            return node.Type == NodeType.CarCross && node.LightState != LightState.Green;
         }
     }
 }

@@ -2,8 +2,9 @@
 {
     public enum LightState
     {
+        None,
         Green,
         Red,
-        Orange
+        Yellow
     }
 }

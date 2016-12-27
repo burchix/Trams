@@ -58,7 +58,7 @@ namespace Tram.Controller.Repositories
                     string[] par = line.Split(';');
                     if (isNewTramLine)
                     {
-                        tramLine = new TramLine() { Id = par[0] + " (" + par[1] + ")", Departures = new List<TramLine.Departure>(), MainNodes = new List<Node>() };
+                        tramLine = new TramLine() { Id = par[0] + " (" + par[1].Replace("  ", " ").Trim() + ")", Departures = new List<TramLine.Departure>(), MainNodes = new List<Node>() };
                         isNewTramLine = false;
                     }
                     else if (string.IsNullOrEmpty(par[0]) && !isDepartureLine)
@@ -133,7 +133,7 @@ namespace Tram.Controller.Repositories
                                 Coordinates = new Vector2(float.Parse(par[0], CultureInfo.InvariantCulture.NumberFormat), float.Parse(par[1], CultureInfo.InvariantCulture.NumberFormat)),
                                 Id = par[2],
                                 IsUnderground = par[9] == "1",
-                                LightState = LightState.Red,
+                                LightState = par[6] == "1" ? LightState.Red : LightState.None,
                                 Type = par[4] == "1" ? NodeType.TramStop :
                                        par[6] == "1" ? NodeType.CarCross :
                                        !string.IsNullOrEmpty(par[3]) ? NodeType.TramCross : NodeType.Normal
