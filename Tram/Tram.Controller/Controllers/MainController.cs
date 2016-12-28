@@ -18,9 +18,10 @@ namespace Tram.Controller.Controllers
         private VehiclesController vehiclesController;
         
         private DateTime lastUpdateTime;
-        private float simulationSpeed;
 
         #region Public Properties
+
+        public float SimulationSpeed { get; set; } = 1;
 
         public List<Node> Map { get; set; }
 
@@ -44,9 +45,8 @@ namespace Tram.Controller.Controllers
 
         #region Public Methods
 
-        public void StartSimulation(DateTime startTime, float simulationSpeed)
+        public void StartSimulation(DateTime startTime)
         {
-            this.simulationSpeed = simulationSpeed;
             lastUpdateTime = DateTime.Now;
             ActualRealTime = startTime;
             GetAndPrepareModels();
@@ -61,7 +61,7 @@ namespace Tram.Controller.Controllers
         {
             // Get time interval since last update (in seconds)
             float elapsedTime = (float)Math.Min((DateTime.Now - lastUpdateTime).TotalSeconds, CalculationConsts.MAX_TIME_INTERVAL);
-            float deltaTime = elapsedTime * simulationSpeed;
+            float deltaTime = elapsedTime * SimulationSpeed;
             lastUpdateTime = DateTime.Now;
 
             // Change time 

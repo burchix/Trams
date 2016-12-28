@@ -14,6 +14,8 @@ namespace Tram.Simulation
 {
     public partial class MainForm : Form
     {
+        private MainController controller;
+        private DirectxController directxController;
         private Device device;
 
         private Vector3 cameraPosition, cameraTarget;
@@ -31,8 +33,15 @@ namespace Tram.Simulation
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.Opaque, true);
             SetLanguage();
 
+            // Set controls
+            playButton.Visible = false;
+            pauseButton.Location = playButton.Location;
+
             // Set handlers
             renderPanel.MouseWheel += RenderPanel_MouseWheel;
+            speedCustomTrackBar.OnBarValueChanged += SpeedCustomTrackBar_OnBarValueChanged;
+            playButton.Click += PlayButton_Click;
+            pauseButton.Click += PauseButton_Click;
 
             // Set variables
             cameraPosition = new Vector3(0, 0, ViewConsts.START_CAMERA_Z);
@@ -43,6 +52,13 @@ namespace Tram.Simulation
             removedVehiclesIds = new List<string>();
         }
 
+        public void Init(MainController controller, DirectxController directxController)
+        {
+            InitializeGraphics();
+            this.controller = controller;
+            this.directxController = directxController;
+        }
+
         #region Public Methods
 
         public void SetLanguage()
@@ -50,23 +66,7 @@ namespace Tram.Simulation
             Text = Resources.Window_Title;
         }
 
-        public bool InitializeGraphics()
-        {
-            try
-            {
-                PresentParameters presentParams = new PresentParameters();
-                presentParams.Windowed = true;
-                presentParams.SwapEffect = SwapEffect.Discard;
-                device = new Device(0, DeviceType.Hardware, renderPanel, CreateFlags.MixedVertexProcessing, presentParams);
-                return true;
-            }
-            catch (DirectXException)
-            {
-                return false;
-            }
-        }
-
-        public void Update(MainController controller, DirectxController directxController)
+        public void Update()
         {
             if ((DateTime.Now - lastUpdateTime).TotalSeconds > CalculationConsts.INTERFACE_REFRESH_TIME_INTERVAL)
             {
@@ -131,7 +131,45 @@ namespace Tram.Simulation
 
         #endregion Public Methods
 
-        #region Private Handlers 
+        #region Private Handlers
+
+        private bool InitializeGraphics()
+        {
+            try
+            {
+                PresentParameters presentParams = new PresentParameters();
+                presentParams.Windowed = true;
+                presentParams.SwapEffect = SwapEffect.Discard;
+                device = new Device(0, DeviceType.Hardware, renderPanel, CreateFlags.MixedVertexProcessing, presentParams);
+                return true;
+            }
+            catch (DirectXException)
+            {
+                return false;
+            }
+        }
+
+        private void SpeedCustomTrackBar_OnBarValueChanged(object sender, int e)
+        {
+            if (controller.SimulationSpeed > 0)
+            {
+                controller.SimulationSpeed = e;
+            }
+        }
+
+        private void PauseButton_Click(object sender, EventArgs e)
+        {
+            controller.SimulationSpeed = 0;
+            pauseButton.Visible = false;
+            playButton.Visible = true;
+        }
+
+        private void PlayButton_Click(object sender, EventArgs e)
+        {
+            controller.SimulationSpeed = speedCustomTrackBar.Value;
+            playButton.Visible = false;
+            pauseButton.Visible = true;
+        }
 
         private void listView_Click(object sender, EventArgs e)
         {

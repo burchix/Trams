@@ -10,7 +10,7 @@
         // s
         public const float MAX_TIME_INTERVAL = 0.1f;
         
-        public const int SAMPLES_COUNT = 20;
+        public const int SAMPLES_COUNT = 10;
 
         // s
         public const float INTERFACE_REFRESH_TIME_INTERVAL = 2f;

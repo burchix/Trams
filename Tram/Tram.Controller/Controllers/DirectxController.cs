@@ -40,7 +40,6 @@ namespace Tram.Controller.Controllers
             {
                 mainController = Kernel.Get<MainController>();
             }
-
             if (capacityController == null)
             {
                 capacityController = Kernel.Get<CapacityController>();
@@ -50,25 +49,6 @@ namespace Tram.Controller.Controllers
             maxX = mainController.Map.Max(n => n.Coordinates.X);
             minY = mainController.Map.Min(n => n.Coordinates.Y);
             maxY = mainController.Map.Max(n => n.Coordinates.Y);
-
-            foreach (var node in mainController.Map)
-            {
-                float pX = CalculateXPosition(node.Coordinates.X);
-                float pY = CalculateYPosition(node.Coordinates.Y);
-                if (node.Child != null)
-                {
-                    float pX2 = CalculateXPosition(node.Child.Node.Coordinates.X);
-                    float pY2 = CalculateYPosition(node.Child.Node.Coordinates.Y);
-                }
-                else if (node.Children != null)
-                {
-                    foreach (var child in node.Children)
-                    {
-                        float pX2 = CalculateXPosition(child.Node.Coordinates.X);
-                        float pY2 = CalculateYPosition(child.Node.Coordinates.Y);
-                    }
-                }
-            }
 
             foreach (var node in mainController.Map)
             {

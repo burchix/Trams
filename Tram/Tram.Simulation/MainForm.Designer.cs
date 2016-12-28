@@ -40,10 +40,8 @@
             this.aboutUsButton = new System.Windows.Forms.Panel();
             this.playButton = new System.Windows.Forms.Panel();
             this.pauseButton = new System.Windows.Forms.Panel();
-            this.speedTrackBar = new System.Windows.Forms.TrackBar();
-            this.stopButton = new System.Windows.Forms.Panel();
+            this.speedCustomTrackBar = new Tram.Simulation.Controls.CustomTrackBar();
             this.rightPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.speedTrackBar)).BeginInit();
             this.SuspendLayout();
             // 
             // rightPanel
@@ -175,36 +173,30 @@
             this.pauseButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pauseButton.BackgroundImage")));
             this.pauseButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pauseButton.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pauseButton.Location = new System.Drawing.Point(66, 733);
+            this.pauseButton.Location = new System.Drawing.Point(733, 733);
             this.pauseButton.Name = "pauseButton";
             this.pauseButton.Size = new System.Drawing.Size(48, 48);
             this.pauseButton.TabIndex = 8;
             // 
-            // speedTrackBar
+            // speedCustomTrackBar
             // 
-            this.speedTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.speedTrackBar.BackColor = System.Drawing.Color.White;
-            this.speedTrackBar.LargeChange = 10;
-            this.speedTrackBar.Location = new System.Drawing.Point(174, 736);
-            this.speedTrackBar.Maximum = 100;
-            this.speedTrackBar.Minimum = 1;
-            this.speedTrackBar.Name = "speedTrackBar";
-            this.speedTrackBar.Size = new System.Drawing.Size(584, 45);
-            this.speedTrackBar.TabIndex = 9;
-            this.speedTrackBar.TickStyle = System.Windows.Forms.TickStyle.Both;
-            this.speedTrackBar.Value = 1;
-            // 
-            // stopButton
-            // 
-            this.stopButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.stopButton.BackColor = System.Drawing.Color.White;
-            this.stopButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("stopButton.BackgroundImage")));
-            this.stopButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.stopButton.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.stopButton.Location = new System.Drawing.Point(120, 733);
-            this.stopButton.Name = "stopButton";
-            this.stopButton.Size = new System.Drawing.Size(48, 48);
-            this.stopButton.TabIndex = 9;
+            this.speedCustomTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.speedCustomTrackBar.BackColor = System.Drawing.Color.White;
+            this.speedCustomTrackBar.BarColor = System.Drawing.Color.FromArgb(((int)(((byte)(27)))), ((int)(((byte)(206)))), ((int)(((byte)(184)))));
+            this.speedCustomTrackBar.BarHeight = 5;
+            this.speedCustomTrackBar.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.speedCustomTrackBar.FirstValue = 1;
+            this.speedCustomTrackBar.LastValue = 10;
+            this.speedCustomTrackBar.Location = new System.Drawing.Point(66, 733);
+            this.speedCustomTrackBar.Name = "speedCustomTrackBar";
+            this.speedCustomTrackBar.PointerColor = System.Drawing.Color.FromArgb(((int)(((byte)(223)))), ((int)(((byte)(237)))), ((int)(((byte)(232)))));
+            this.speedCustomTrackBar.PointerShadowColor = System.Drawing.Color.DodgerBlue;
+            this.speedCustomTrackBar.PointRadius = 15;
+            this.speedCustomTrackBar.ShadowColor = System.Drawing.Color.FromArgb(((int)(((byte)(219)))), ((int)(((byte)(239)))), ((int)(((byte)(243)))));
+            this.speedCustomTrackBar.Size = new System.Drawing.Size(661, 48);
+            this.speedCustomTrackBar.TabIndex = 10;
+            this.speedCustomTrackBar.Value = 1;
             // 
             // MainForm
             // 
@@ -212,8 +204,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1097, 793);
-            this.Controls.Add(this.stopButton);
-            this.Controls.Add(this.speedTrackBar);
+            this.Controls.Add(this.speedCustomTrackBar);
             this.Controls.Add(this.pauseButton);
             this.Controls.Add(this.playButton);
             this.Controls.Add(this.aboutUsButton);
@@ -232,9 +223,7 @@
             this.Name = "MainForm";
             this.Text = "Form1";
             this.rightPanel.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.speedTrackBar)).EndInit();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -250,8 +239,7 @@
         private System.Windows.Forms.Panel aboutUsButton;
         private System.Windows.Forms.Panel playButton;
         private System.Windows.Forms.Panel pauseButton;
-        private System.Windows.Forms.TrackBar speedTrackBar;
-        private System.Windows.Forms.Panel stopButton;
         private System.Windows.Forms.ListView listView;
+        private Controls.CustomTrackBar speedCustomTrackBar;
     }
 }
