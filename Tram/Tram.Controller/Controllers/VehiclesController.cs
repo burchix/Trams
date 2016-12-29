@@ -165,7 +165,7 @@ namespace Tram.Controller.Controllers
             }
 
             //Check intersection
-            if (vehicle.CurrentIntersection != null && !vehicle.IsStillOnIntersection())
+            if (vehicle.CurrentIntersection != null && (!vehicle.IsStillOnIntersection() || vehicle.Position.Node1.Equals(vehicle.Line.MainNodes.Last())))
             {
                 DequeueIntersection(vehicle.CurrentIntersection);
                 vehicle.CurrentIntersection = null;
