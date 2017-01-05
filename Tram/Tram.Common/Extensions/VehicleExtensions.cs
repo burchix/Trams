@@ -37,6 +37,11 @@ namespace Tram.Common.Extensions
             return false;
         }
 
+        public static void aaa(this string s)
+        {
+            s += "aaa";
+        }
+
         public static bool IsOnLights(this Vehicle vehicle) => vehicle.Position.Node2.Type == NodeType.CarCross;
 
         public static bool IsOnLightsAndHasRedLight(this Vehicle vehicle, float deltaTime)
