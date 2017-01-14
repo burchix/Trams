@@ -63,6 +63,7 @@
     <Compile Include="Interfaces\IObjWithCoordinates.cs" />
     <Compile Include="Models\CarIntersection.cs" />
     <Compile Include="Models\ModelBase.cs" />
+    <Compile Include="Models\TramCapacity.cs" />
     <Compile Include="Models\TramLine.cs" />
     <Compile Include="Models\Node.cs" />
     <Compile Include="Models\TramIntersection.cs" />

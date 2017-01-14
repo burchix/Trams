@@ -1,4 +1,6 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using Tram.Common.Models;
 
 namespace Tram.Controller.Controllers
@@ -10,6 +12,7 @@ namespace Tram.Controller.Controllers
         // sets the new capacity of vehicle, based on actual time, line and current stop; returns the time of boarding (in seconds)
         public float SetTramCapacity(Vehicle vehicle)
         {
+            //zainicjować pole Passangers w Vehicle w zależności od czasu kursu
             if (mainController == null)
             {
                 mainController = Kernel.Get<MainController>();
@@ -26,7 +29,18 @@ namespace Tram.Controller.Controllers
 
         public Color GetTramColor(int capacity)
         {
+            //w zależności od capacity- green- mało pasażerów, yellow- średnio dużo, red- dużo
+            // wyznacznik- największa znaleziona capacity
             return Color.Red;
+        }
+
+        private IEnumerable<string> GetFileLines(StreamReader file)
+        {
+            string textLine = null;
+            while ((textLine = file.ReadLine()) != null)
+            {
+                yield return textLine;
+            }
         }
     }
 }

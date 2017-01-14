@@ -17,7 +17,7 @@ namespace Tram.Controller.Repositories
         private List<TramLine> tramLines;
         private List<Node> nodes;
         private List<CarIntersection> carIntersections;
-
+        private TramCapacity capacity;
         #region Public Methods
 
         /// <summary>
@@ -53,26 +53,60 @@ namespace Tram.Controller.Repositories
                 TramLine tramLine = null;
                 bool isNewTramLine = true;
                 bool isDepartureLine = false;
+                //---zmienne pomocnicze do capacity
+                List<string> StartingTimes = new List<string>();
+                List<List<int>> allCapacities = new List<List<int>>();
+                int l = 0;
+                //---
                 foreach (string line in GetFileLines(file))
                 {
                     string[] par = line.Split(';');
                     if (isNewTramLine)
                     {
-                        tramLine = new TramLine() { Id = par[0] + " (" + par[1].Replace("  ", " ").Trim() + ")", Departures = new List<TramLine.Departure>(), MainNodes = new List<Node>() };
+                        tramLine = new TramLine() { Id = par[0] + " (" + par[1].Replace("  ", " ").Trim() + ")", Departures = new List<TramLine.Departure>(), MainNodes = new List<Node>(), Capacity= new Dictionary<string, TramCapacity>() };
                         isNewTramLine = false;
                     }
                     else if (string.IsNullOrEmpty(par[0]) && !isDepartureLine)
                     {
+                        //koniec czytania linii
                         isDepartureLine = true;
                     }
                     else if (string.IsNullOrEmpty(par[0]) && isDepartureLine)
                     {
+                        //linia w drugą stronę, nowa linia
                         isNewTramLine = true;
                         isDepartureLine = false;
-                        tramLines.Add(tramLine);
+
+                        //przypisanie linii obiektu capacity
+                        if (StartingTimes.Count != 0)
+                        {
+                            int cols = allCapacities[0].Count;
+                            int rows = allCapacities.Count;
+                            int k = 0, j = 0, t = 0;
+                            for (int i = 0; i < cols; i += 3)
+                            {
+                                capacity = new TramCapacity();
+                                capacity.gotIn = new List<int>();
+                                capacity.gotOut = new List<int>();
+                                capacity.currentState = new List<int>();
+                                for (j = 0; j < rows; j++)
+                                {
+                                    capacity.gotIn[k] = allCapacities[j][i]; //
+                                    capacity.gotOut[k] = allCapacities[j][i + 1];
+                                    capacity.currentState[k] = allCapacities[j][i + 2];
+                                    k++;
+                                }
+                                tramLine.Capacity = new Dictionary<string, TramCapacity>();
+                                tramLine.Capacity.Add(StartingTimes[t], capacity);
+                                t++;
+                                j += 3;
+                            }
+                        }
+                     tramLines.Add(tramLine);
                     }
                     else if (isDepartureLine)
                     {
+                        StartingTimes = new List<string>();
                         for (int i = 0; i < par.Length; i++)
                         {
                             if (string.IsNullOrEmpty(par[i]))
@@ -81,6 +115,8 @@ namespace Tram.Controller.Repositories
                             }
 
                             tramLine.Departures[i].StartTime = TimeHelper.GetTime(par[i]);
+                            //capacity - klucze
+                            StartingTimes.Add(par[i]);
                         }
                     }
                     else
@@ -104,7 +140,16 @@ namespace Tram.Controller.Repositories
 
                                 j++;
                             }
-                        }                    
+                            //wczytanie capacities
+                            allCapacities.Add(new List<int>());
+                            for (int k=2; k<par.Length-3; k+=4)
+                            {
+                                allCapacities[l].Add(int.Parse(par[k]));
+                                allCapacities[l].Add(int.Parse(par[k + 1]));
+                                allCapacities[l].Add(int.Parse(par[k + 2]));
+                            }   
+                            l++;
+                        }                
                     }
                 }
             }            
