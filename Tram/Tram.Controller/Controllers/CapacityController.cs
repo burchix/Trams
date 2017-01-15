@@ -13,6 +13,11 @@ namespace Tram.Controller.Controllers
         public float SetTramCapacity(Vehicle vehicle)
         {
             //zainicjować pole Passangers w Vehicle w zależności od czasu kursu
+            //weź currentState dla danego kursu, wszystkich przystanków
+            if (vehicle.Line.Capacity.ContainsKey(vehicle.StartTime.ToString()))
+            {
+               vehicle.Passengers = vehicle.Line.Capacity[vehicle.StartTime.ToString()].currentState[vehicle.LastVisitedStops.Count];
+            }
             if (mainController == null)
             {
                 mainController = Kernel.Get<MainController>();

@@ -64,6 +64,8 @@ namespace Tram.Controller.Repositories
                     if (isNewTramLine)
                     {
                         tramLine = new TramLine() { Id = par[0] + " (" + par[1].Replace("  ", " ").Trim() + ")", Departures = new List<TramLine.Departure>(), MainNodes = new List<Node>(), Capacity= new Dictionary<string, TramCapacity>() };
+                        allCapacities = new List<List<int>>();
+                        l = 0;
                         isNewTramLine = false;
                     }
                     else if (string.IsNullOrEmpty(par[0]) && !isDepartureLine)
@@ -78,27 +80,24 @@ namespace Tram.Controller.Repositories
                         isDepartureLine = false;
 
                         //przypisanie linii obiektu capacity
-                        if (StartingTimes.Count != 0)
+                        int cols = allCapacities[0].Count; //!!!
+                        int rows = allCapacities.Count;
+                        int k = 0, j = 0;
+                        tramLine.Capacity = new Dictionary<string, TramCapacity>();
+                        for (int i = 0; i < cols; i += 3)
                         {
-                            int cols = allCapacities[0].Count;
-                            int rows = allCapacities.Count;
-                            int k = 0, j = 0; 
-                            for (int i = 0; i < cols; i += 3)
-                            {
-                                capacity = new TramCapacity();
-                                for (j = 0; j < rows; j++)
-                                { 
-                                    capacity.gotIn.Add(allCapacities[j][i]); 
-                                    capacity.gotOut.Add( allCapacities[j][i + 1]);
-                                    capacity.currentState.Add(allCapacities[j][i + 2]);
-                                }
-                                tramLine.Capacity = new Dictionary<string, TramCapacity>();
-                                tramLine.Capacity.Add(StartingTimes[k], capacity);
-                                k++;
-                                j += 3;
-                            }
-                        }
-                     tramLines.Add(tramLine);
+                            capacity = new TramCapacity();
+                            for (j = 0; j < rows; j++)
+                             {
+                                 capacity.gotIn.Add(allCapacities[j][i]);
+                                 capacity.gotOut.Add(allCapacities[j][i + 1]);
+                                 capacity.currentState.Add(allCapacities[j][i + 2]);
+                              }
+                              tramLine.Capacity.Add(StartingTimes[k], capacity);
+                              k++;
+                              j += 3;
+                          }
+                          tramLines.Add(tramLine);
                     }
                     else if (isDepartureLine)
                     {
