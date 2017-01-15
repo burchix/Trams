@@ -12,5 +12,14 @@ namespace Tram.Common.Models
         public List<int> gotOut;
         public List<int> currentState;
 
+        public TramCapacity()
+        {
+            gotIn = new List<int>();
+            gotOut = new List<int>();
+            currentState = new List<int>();
+        }
+
     }
+
+
 }

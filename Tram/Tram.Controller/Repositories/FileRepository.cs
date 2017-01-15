@@ -82,23 +82,19 @@ namespace Tram.Controller.Repositories
                         {
                             int cols = allCapacities[0].Count;
                             int rows = allCapacities.Count;
-                            int k = 0, j = 0, t = 0;
+                            int k = 0, j = 0; 
                             for (int i = 0; i < cols; i += 3)
                             {
                                 capacity = new TramCapacity();
-                                capacity.gotIn = new List<int>();
-                                capacity.gotOut = new List<int>();
-                                capacity.currentState = new List<int>();
                                 for (j = 0; j < rows; j++)
-                                {
-                                    capacity.gotIn[k] = allCapacities[j][i]; //
-                                    capacity.gotOut[k] = allCapacities[j][i + 1];
-                                    capacity.currentState[k] = allCapacities[j][i + 2];
-                                    k++;
+                                { 
+                                    capacity.gotIn.Add(allCapacities[j][i]); 
+                                    capacity.gotOut.Add( allCapacities[j][i + 1]);
+                                    capacity.currentState.Add(allCapacities[j][i + 2]);
                                 }
                                 tramLine.Capacity = new Dictionary<string, TramCapacity>();
-                                tramLine.Capacity.Add(StartingTimes[t], capacity);
-                                t++;
+                                tramLine.Capacity.Add(StartingTimes[k], capacity);
+                                k++;
                                 j += 3;
                             }
                         }

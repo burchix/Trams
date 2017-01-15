@@ -16,7 +16,6 @@ namespace Tram.Common.Models
             public DateTime StartTime { get; set; }
             
             public List<float> NextStopIntervals { get; set; }
-            //w capacity controller ma zwrócić to
         }
 
         public Dictionary<string, TramCapacity> Capacity { get; set; }
