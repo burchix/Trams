@@ -22,6 +22,8 @@ namespace Tram.Common.Models
 
         public List<Next> Children { get; set; }
 
+        public List<Vehicle> VehiclesOn { get; set; }
+
         public class Next
         {
             public Node Node { get; set; }

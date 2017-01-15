@@ -2,6 +2,8 @@
 {
     public static class VehicleConsts
     {
+        public const int MAX_CAPACITY = 200;
+
         // m
         public const int LENGTH = 36;
 

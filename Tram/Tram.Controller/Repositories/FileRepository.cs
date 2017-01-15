@@ -17,7 +17,7 @@ namespace Tram.Controller.Repositories
         private List<TramLine> tramLines;
         private List<Node> nodes;
         private List<CarIntersection> carIntersections;
-        private TramCapacity capacity;
+
         #region Public Methods
 
         /// <summary>
@@ -86,18 +86,20 @@ namespace Tram.Controller.Repositories
                         tramLine.Capacity = new Dictionary<string, TramCapacity>();
                         for (int i = 0; i < cols; i += 3)
                         {
-                            capacity = new TramCapacity();
+                            TramCapacity capacity = new TramCapacity();
                             for (j = 0; j < rows; j++)
-                             {
-                                 capacity.gotIn.Add(allCapacities[j][i]);
-                                 capacity.gotOut.Add(allCapacities[j][i + 1]);
-                                 capacity.currentState.Add(allCapacities[j][i + 2]);
-                              }
-                              tramLine.Capacity.Add(StartingTimes[k], capacity);
-                              k++;
-                              j += 3;
-                          }
-                          tramLines.Add(tramLine);
+                            {
+                                capacity.GotIn.Add(allCapacities[j][i]);
+                                capacity.GotOut.Add(allCapacities[j][i + 1]);
+                                capacity.CurrentState.Add(allCapacities[j][i + 2]);
+                            }
+
+                            tramLine.Capacity.Add(StartingTimes[k], capacity);
+                            k++;
+                            j += 3;
+                        }
+
+                        tramLines.Add(tramLine);
                     }
                     else if (isDepartureLine)
                     {
@@ -135,14 +137,16 @@ namespace Tram.Controller.Repositories
 
                                 j++;
                             }
+
                             //wczytanie capacities
                             allCapacities.Add(new List<int>());
-                            for (int k=2; k<par.Length-3; k+=4)
+                            for (int k = 2; k < par.Length - 3; k += 4)
                             {
                                 allCapacities[l].Add(int.Parse(par[k]));
                                 allCapacities[l].Add(int.Parse(par[k + 1]));
                                 allCapacities[l].Add(int.Parse(par[k + 2]));
-                            }   
+                            }
+
                             l++;
                         }                
                     }
@@ -174,6 +178,7 @@ namespace Tram.Controller.Repositories
                                 Id = par[2],
                                 IsUnderground = par[9] == "1",
                                 LightState = par[6] == "1" ? LightState.Red : LightState.None,
+                                VehiclesOn = new List<Vehicle>(),
                                 Type = par[4] == "1" ? NodeType.TramStop :
                                        par[6] == "1" ? NodeType.CarCross :
                                        !string.IsNullOrEmpty(par[3]) ? NodeType.TramCross : NodeType.Normal

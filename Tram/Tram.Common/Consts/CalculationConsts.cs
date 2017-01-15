@@ -4,14 +4,14 @@
     {
         public const float EPSILON = 0.00000001f;
 
+        public const int SAMPLES_COUNT = 10;
+
         // m
         public const float DISTANCE_EPSILON = 4f;
 
         // s
         public const float MAX_TIME_INTERVAL = 0.1f;
         
-        public const int SAMPLES_COUNT = 10;
-
         // s
         public const float INTERFACE_REFRESH_TIME_INTERVAL = 2f;
 

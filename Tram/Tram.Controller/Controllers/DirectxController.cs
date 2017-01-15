@@ -50,7 +50,7 @@ namespace Tram.Controller.Controllers
             minY = mainController.Map.Min(n => n.Coordinates.Y);
             maxY = mainController.Map.Max(n => n.Coordinates.Y);
 
-            foreach (var node in mainController.Map)
+            foreach (var node in mainController.Map.OrderBy(n => !n.IsUnderground))
             {
                 float pX = CalculateXPosition(node.Coordinates.X); 
                 float pY = CalculateYPosition(node.Coordinates.Y);

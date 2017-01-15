@@ -1,25 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Tram.Common.Models
 {
-   public class TramCapacity
+    public class TramCapacity
     {
-        public List<int> gotIn;
-        public List<int> gotOut;
-        public List<int> currentState;
+        public List<int> GotIn { get; set; }
+
+        public List<int> GotOut { get; set; }
+
+        public List<int> CurrentState { get; set; }
 
         public TramCapacity()
         {
-            gotIn = new List<int>();
-            gotOut = new List<int>();
-            currentState = new List<int>();
+            GotIn = new List<int>();
+            GotOut = new List<int>();
+            CurrentState = new List<int>();
         }
-
     }
-
-
 }

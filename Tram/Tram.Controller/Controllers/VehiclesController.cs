@@ -45,6 +45,11 @@ namespace Tram.Controller.Controllers
                                                      (v.VisitedNodes.Any(n => n.Equals(node)) || v.Line.MainNodes.First().Equals(node)));
         } 
 
+        public bool FinishCoursePredicate(Vehicle vehicle)
+        {
+            return vehicle.Position.Node1.Equals(vehicle.Line.MainNodes.Last());
+        }
+
         #endregion Public Methods
 
         #region Private Methods
@@ -97,7 +102,7 @@ namespace Tram.Controller.Controllers
                     vehicle.Speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime, false);
                 }
             }
-            else if (vehicle.IsAnyVehicleClose(vehicles, deltaTime))
+            else if (vehicle.IsAnyVehicleClose(deltaTime))
             {
                 vehicle.Speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime, false);
             }
@@ -149,7 +154,9 @@ namespace Tram.Controller.Controllers
                     if (newNode != null)
                     {
                         vehicle.VisitedNodes.Add(newNode.Node);
+                        vehicle.Position.Node1.VehiclesOn.Remove(vehicle);
                         vehicle.Position.Node1 = vehicle.Position.Node2;
+                        vehicle.Position.Node1.VehiclesOn.Add(vehicle);
                         vehicle.Position.Node2 = newNode.Node;
                         vehicle.Position.Displacement = 0;
                         vehicle.Position.Displacement += (translation - distanceToNextPoint) * 100 / vehicle.Position.Node1.GetDistanceToChild(vehicle.Position.Node2);
@@ -165,10 +172,15 @@ namespace Tram.Controller.Controllers
             }
 
             //Check intersection
-            if (vehicle.CurrentIntersection != null && (!vehicle.IsStillOnIntersection() || vehicle.Position.Node1.Equals(vehicle.Line.MainNodes.Last())))
+            if (vehicle.CurrentIntersection != null && (!vehicle.IsStillOnIntersection() || FinishCoursePredicate(vehicle)))
             {
                 DequeueIntersection(vehicle.CurrentIntersection);
                 vehicle.CurrentIntersection = null;
+            }
+
+            if (FinishCoursePredicate(vehicle))
+            {
+                vehicle.Position.Node1.VehiclesOn.Remove(vehicle);
             }
         }
 

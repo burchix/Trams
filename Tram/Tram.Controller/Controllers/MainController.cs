@@ -68,7 +68,7 @@ namespace Tram.Controller.Controllers
             ActualRealTime += new TimeSpan(0, 0, 0, 0, (int)(deltaTime * 1000));
 
             //Remove finished courses
-            Vehicles.RemoveAll(v => v.Position.Node1.Equals(v.Line.MainNodes.Last()));
+            Vehicles.RemoveAll(vehiclesController.FinishCoursePredicate);
             
             float sampleDeltaTime = deltaTime / CalculationConsts.SAMPLES_COUNT;
             for (int i = 0; i < CalculationConsts.SAMPLES_COUNT; i++)
@@ -136,13 +136,13 @@ namespace Tram.Controller.Controllers
                         {
                             startPoints.Add(line.MainNodes.First());
                             line.LastDeparture = line.Departures[i];
-                            Vehicles.Add(new Vehicle()
+                            Vehicle newVehicle = new Vehicle()
                             {
-                                Id = line.Id + " - " + TimeHelper.GetTimeStr(ActualRealTime),
+                                Id = line.Id + " - " + TimeHelper.GetTimeStr(line.LastDeparture.StartTime),
                                 Line = line,
-                                Passengers = 0, //TODO: ustawić startową liczbę
+                                Passengers = 0,
                                 Speed = 0f,
-                                StartTime = ActualRealTime,
+                                StartTime = line.LastDeparture.StartTime,
                                 IsOnStop = line.MainNodes.First().Type == NodeType.TramStop,
                                 LastVisitedStops = new List<Node>(),
                                 VisitedNodes = new List<Node>()
@@ -157,7 +157,9 @@ namespace Tram.Controller.Controllers
                                     Displacement = 0,
                                     Coordinates = line.MainNodes.First().Coordinates
                                 }
-                            });
+                            };
+                            line.MainNodes.First().VehiclesOn.Add(newVehicle);
+                            Vehicles.Add(newVehicle);
                         }
 
                         break;

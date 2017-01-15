@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Tram.Common.Models;
 
 namespace Tram.Common.Extensions
@@ -15,6 +16,20 @@ namespace Tram.Common.Extensions
             {
                 return node.Children.Single(n => n.Node.Equals(child)).Distance;
             }
+        }
+
+        public static List<Node.Next> GetAllNextNodes(this Node node)
+        {
+            if (node.Child != null)
+            {
+                return new List<Node.Next>() { node.Child };
+            }
+            else if (node.Children != null && node.Children.Any())
+            {
+                return node.Children;
+            }
+
+            return null;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Tram.Common.Consts;
 using Tram.Common.Enums;
@@ -35,11 +36,6 @@ namespace Tram.Common.Extensions
 
             intersection = null;
             return false;
-        }
-
-        public static void aaa(this string s)
-        {
-            s += "aaa";
         }
 
         public static bool IsOnLights(this Vehicle vehicle) => vehicle.Position.Node2.Type == NodeType.CarCross;
@@ -127,20 +123,69 @@ namespace Tram.Common.Extensions
                             node.Type != NodeType.Normal && 
                             (CorrectTramCrossPredicate(vehicle, node) || CorrectStopPredicate(vehicle, node) || CorrectNotGreenCarCrossPredicate(node));
 
-        public static bool IsAnyVehicleClose(this Vehicle vehicle, List<Vehicle> vehicles, float deltaTime)
+        public static bool IsAnyVehicleClose(this Vehicle vehicle, float deltaTime)
         {
             float speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime);
             float brakingDistance = PhysicsHelper.GetBrakingDistance(speed);
 
-            Vehicle result = vehicles.Where(v => !v.Equals(vehicle) &&
-                                                 vehicle.RealDistanceTo(v) <= (brakingDistance + VehicleConsts.SAFE_SPACE) &&
-                                                 v.RealDistanceTo(v.Position.Node2) <= vehicle.RealDistanceTo(v.Position.Node2) && vehicle.RealDistanceTo(vehicle.Position.Node1) <= v.RealDistanceTo(vehicle.Position.Node1) && // check if object is ahead of vehicle
-                                                 v.VisitedNodes.Any(vn => vn.Equals(vehicle.Position.Node2)) &&
-                                                 (v.Line.Equals(vehicle.Line) ||
-                                                 v.VisitedNodes.Intersect(vehicle.VisitedNodes).Any()))
-                                     .FirstOrDefault();
-                        
-            return result != null;
+            return IsAnyVehicleClose(vehicle, speed, brakingDistance, vehicle.Position.Node1, 0);
+            
+            //Node node = vehicle.Position.Node1;
+
+            //foreach (Vehicle neighbor in node.VehiclesOn)
+            //{
+            //    if (!neighbor.Equals(vehicle) &&
+            //        vehicle.RealDistanceTo(neighbor) <= (brakingDistance + VehicleConsts.SAFE_SPACE) && // check distance between vehicles
+            //        neighbor.RealDistanceTo(neighbor.Position.Node2) <= vehicle.RealDistanceTo(neighbor.Position.Node2) && 
+            //        vehicle.RealDistanceTo(vehicle.Position.Node1) <= neighbor.RealDistanceTo(vehicle.Position.Node1)) // check if object is ahead of vehicle)
+            //    {
+            //        return true;
+            //    }
+            //}
+
+            //List<Node.Next> nextNodes = node.GetAllNextNodes();
+            //float distance = vehicle.RealDistanceTo(node);
+            //return nextNodes.Any(nn => IsAnyVehicleClose(vehicle, speed, brakingDistance, nn.Node, distance));
+
+            //node = nextNode.Node;
+            //distance += vehicle.RealDistanceTo(node);
+            
+            //Vehicle result = vehicles.Where(v => !v.Equals(vehicle) &&
+            //                                     vehicle.RealDistanceTo(v) <= (brakingDistance + VehicleConsts.SAFE_SPACE) &&
+            //                                     v.RealDistanceTo(v.Position.Node2) <= vehicle.RealDistanceTo(v.Position.Node2) && vehicle.RealDistanceTo(vehicle.Position.Node1) <= v.RealDistanceTo(vehicle.Position.Node1) && // check if object is ahead of vehicle
+            //                                     v.VisitedNodes.Any(vn => vn.Equals(vehicle.Position.Node2)) &&
+            //                                     (v.Line.Equals(vehicle.Line) ||
+            //                                     v.VisitedNodes.Intersect(vehicle.VisitedNodes).Any()))
+            //                         .FirstOrDefault();
+        }
+
+        private static bool IsAnyVehicleClose(Vehicle vehicle, float speed, float brakingDistance, Node node, float distance)
+        {
+            if (distance > brakingDistance + VehicleConsts.SAFE_SPACE)
+            {
+                return false;
+            }
+
+            bool isFirstComparation = !(distance > 0);
+
+            foreach (Vehicle neighbor in node.VehiclesOn)
+            {
+                if (!neighbor.Equals(vehicle) &&
+                     vehicle.RealDistanceTo(neighbor) <= (brakingDistance + VehicleConsts.SAFE_SPACE) && // check distance between vehicles
+                     (!isFirstComparation ||
+                     neighbor.RealDistanceTo(neighbor.Position.Node2) <= vehicle.RealDistanceTo(neighbor.Position.Node2) &&
+                     vehicle.RealDistanceTo(vehicle.Position.Node1) <= neighbor.RealDistanceTo(vehicle.Position.Node1))) // check if object is ahead of vehicle)
+                {
+                    return true;
+                }
+            }
+            
+            return node.GetAllNextNodes()
+                       .Any(nn => IsAnyVehicleClose(vehicle, 
+                                                    speed, 
+                                                    brakingDistance, 
+                                                    nn.Node,
+                                                    isFirstComparation ? vehicle.RealDistanceTo(nn.Node) : distance + nn.Distance));
         }
 
         private static bool CorrectStopPredicate(Vehicle vehicle, Node node)
