@@ -16,7 +16,7 @@ namespace Tram.Simulation
         {
             MainController controller = Kernel.Get<MainController>();
             DirectxController directxController = Kernel.Get<DirectxController>();
-            controller.StartSimulation(TimeHelper.GetTime("07:30"));
+            controller.StartSimulation(TimeHelper.GetTime("05:30"));
 
             using (MainForm form = new MainForm())
             {
@@ -30,12 +30,8 @@ namespace Tram.Simulation
                 {
                     controller.Update(); // UPDATE SIMULATION
                     form.Render(controller.Render); //RENDER SIMULATION
-                    form.Update();
-                    try
-                    {
-                        Application.DoEvents();
-                    }
-                    catch { }
+                    form.UpdateForm(); // UPDATE WINDOW
+                    Application.DoEvents();
                 }
             }
         }

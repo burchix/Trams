@@ -6,9 +6,9 @@ using System.Windows.Forms;
 using Tram.Common.Consts;
 using Tram.Simulation.Properties;
 using Tram.Controller.Controllers;
-using System.Linq;
-using System.Collections.Generic;
 using Tram.Common.Models;
+using System.Collections.Generic;
+using Tram.Simulation.Forms;
 
 namespace Tram.Simulation
 {
@@ -22,10 +22,9 @@ namespace Tram.Simulation
         private Point lastClickedMouseLocation;
 
         private DateTime lastUpdateTime;
-        private long lastVehiclesHashCode;
-        private List<string> vehiclesIds;
-        private List<string> removedVehiclesIds;
-        private string selectedVehicleId, lastSelectedVehicleId;
+
+        private Vehicle selectedVehicle;
+        private List<Vehicle> vehicles;
 
         public MainForm()
         {
@@ -42,14 +41,13 @@ namespace Tram.Simulation
             speedCustomTrackBar.OnBarValueChanged += SpeedCustomTrackBar_OnBarValueChanged;
             playButton.Click += PlayButton_Click;
             pauseButton.Click += PauseButton_Click;
+            vehiclesGridView.CellClick += vehiclesGridView_CellClick;
 
             // Set variables
             cameraPosition = new Vector3(0, 0, ViewConsts.START_CAMERA_Z);
             cameraTarget = new Vector3(0, 0, 0);
-
+            vehicles = new List<Vehicle>();
             lastUpdateTime = DateTime.Now;
-            vehiclesIds = new List<string>();
-            removedVehiclesIds = new List<string>();
         }
 
         public void Init(MainController controller, DirectxController directxController)
@@ -66,49 +64,44 @@ namespace Tram.Simulation
             Text = Resources.Window_Title;
         }
 
-        public void Update()
+        public void UpdateForm()
         {
             if ((DateTime.Now - lastUpdateTime).TotalSeconds > CalculationConsts.INTERFACE_REFRESH_TIME_INTERVAL)
             {
                 lastUpdateTime = DateTime.Now;
 
-                var ids = controller.Vehicles.Select(v => v.Id);
-                var hashcode = ids.Select(id => (long)id.GetHashCode()).Sum();
-                if (lastVehiclesHashCode != hashcode)
+                int selectedRowIndex = -1;
+                
+                vehicles.Clear();
+                vehiclesGridView.Rows.Clear();
+                controller.Vehicles.ForEach(vehicle =>
                 {
-                    removedVehiclesIds.AddRange(vehiclesIds.Where(v => !ids.Contains(v)));
-                    vehiclesIds.Clear();
-                    vehiclesIds.AddRange(ids);
-                    lastVehiclesHashCode = hashcode;
-
-                    listView.Items.Clear();
-                    vehiclesIds.ForEach(v => listView.Items.Add(v));
-                    removedVehiclesIds.ForEach(v => listView.Items.Add(v));
-                    for (int i = vehiclesIds.Count; i < removedVehiclesIds.Count + vehiclesIds.Count; i++)
+                    vehicles.Add(vehicle);
+                    vehiclesGridView.Rows.Add(vehicle.Id);
+                    if (vehicle.Equals(selectedVehicle))
                     {
-                        listView.Items[i].ForeColor = Color.Red;
+                        selectedRowIndex = vehiclesGridView.Rows.Count - 1;
                     }
+                });
+
+                if (selectedRowIndex >= 0)
+                {
+                    vehiclesGridView.Rows[selectedRowIndex].Selected = true;
                 }
             }
-
-            if (lastSelectedVehicleId != selectedVehicleId)
+            
+            if (selectedVehicle != null)
             {
-                Vehicle vehicle = controller.Vehicles.FirstOrDefault(v => v.Id.Equals(selectedVehicleId));
-                if (vehicle != null)
-                {
-                    cameraPosition = new Vector3(
-                        directxController.CalculateXPosition(vehicle.Position.Coordinates.X),
-                        directxController.CalculateYPosition(vehicle.Position.Coordinates.Y), 
-                        ViewConsts.SELECTED_VEHICLE_ZOOM_OFFSET);
-                    cameraTarget.X = cameraPosition.X;
-                    cameraTarget.Y = cameraPosition.Y;
-                }
-
-                lastSelectedVehicleId = selectedVehicleId;
+                cameraPosition = new Vector3(
+                    directxController.CalculateXPosition(selectedVehicle.Position.Coordinates.X),
+                    directxController.CalculateYPosition(selectedVehicle.Position.Coordinates.Y), 
+                    ViewConsts.SELECTED_VEHICLE_ZOOM_OFFSET);
+                cameraTarget.X = cameraPosition.X;
+                cameraTarget.Y = cameraPosition.Y;
             }
         }
 
-        public void Render(Action<Device, Vector3, string> renderAction)
+        public void Render(Action<Device, Vector3, Vehicle> renderAction)
         {
             device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, renderPanel.Width / renderPanel.Height, 1f, 1000f);
             device.Transform.View = Matrix.LookAtLH(cameraPosition, cameraTarget, new Vector3(0, 1, 0));
@@ -122,7 +115,7 @@ namespace Tram.Simulation
             device.VertexFormat = CustomVertex.PositionColored.Format;
 
             //Invoke render action
-            renderAction(device, cameraPosition, selectedVehicleId);
+            renderAction(device, cameraPosition, selectedVehicle);
 
             device.EndScene();
             device.Present();
@@ -131,7 +124,28 @@ namespace Tram.Simulation
 
         #endregion Public Methods
 
-        #region Private Handlers
+        #region Utils
+
+        private const int WM_SYSCOMMAND = 0x0112;
+        private const int SC_MINIMIZE = 0xf020;
+
+        // cancel a form minimize
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == WM_SYSCOMMAND)
+            {
+                if (m.WParam.ToInt32() == SC_MINIMIZE)
+                {
+                    m.Result = IntPtr.Zero;
+                    return;
+                }
+            }
+            base.WndProc(ref m);
+        }
+
+        #endregion Utils
+
+        #region Private Methods
 
         private bool InitializeGraphics()
         {
@@ -148,6 +162,10 @@ namespace Tram.Simulation
                 return false;
             }
         }
+
+        #endregion Private Methods
+
+        #region Private Handlers
 
         private void SpeedCustomTrackBar_OnBarValueChanged(object sender, int e)
         {
@@ -171,11 +189,20 @@ namespace Tram.Simulation
             pauseButton.Visible = true;
         }
 
-        private void listView_Click(object sender, EventArgs e)
+        private void vehiclesGridView_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (listView.SelectedItems != null)
+            if (e.RowIndex != -1)
             {
-                selectedVehicleId = listView.SelectedItems.Count > 0 ? listView.SelectedItems[0].Text : null;
+                if (vehiclesGridView.CurrentCell.ColumnIndex.Equals(1))
+                {
+                    selectedVehicle = vehicles[e.RowIndex];
+                }
+                else if (vehiclesGridView.CurrentCell.ColumnIndex.Equals(2))
+                {
+                    VehicleForm vehicleForm = new VehicleForm(vehicles[e.RowIndex]);
+                    vehicleForm.Init();
+                    vehicleForm.Show();
+                }
             }
         }
 
@@ -185,6 +212,7 @@ namespace Tram.Simulation
 
         private void ZoomInButton_Click(object sender, EventArgs e)
         {
+            selectedVehicle = null;
             if (cameraPosition.Z > ViewConsts.ZOOM_OFFSET)
             {
                 cameraPosition.Z -= ViewConsts.ZOOM_OFFSET;
@@ -197,6 +225,7 @@ namespace Tram.Simulation
 
         private void ZoomOutButton_Click(object sender, EventArgs e)
         {
+            selectedVehicle = null;
             if (cameraPosition.Z < ViewConsts.ZOOM_OFFSET)
             {
                 cameraPosition.Z += ViewConsts.ZOOM_OFFSET / 20;
@@ -214,6 +243,7 @@ namespace Tram.Simulation
 
         private void RenderPanel_MouseWheel(object sender, MouseEventArgs e)
         {
+            selectedVehicle = null;
             if (e.Delta > 0)
             {
                 ZoomInButton_Click(this, new EventArgs());
@@ -226,11 +256,13 @@ namespace Tram.Simulation
 
         private void zoomOriginalButton_Click(object sender, EventArgs e)
         {
+            selectedVehicle = null;
             cameraPosition.Z = ViewConsts.START_CAMERA_Z;
         }
 
         private void centerScreenButton_Click(object sender, EventArgs e)
         {
+            selectedVehicle = null;
             cameraPosition.X = cameraPosition.Y = cameraTarget.X = cameraTarget.Y = 0;
         }
 
@@ -238,6 +270,7 @@ namespace Tram.Simulation
         {
             if (e.Button.HasFlag(MouseButtons.Left))
             {
+                selectedVehicle = null;
                 if (!lastClickedMouseLocation.IsEmpty && lastClickedMouseLocation != e.Location)
                 {
                     float xDiff = Math.Abs(lastClickedMouseLocation.X - e.Location.X);

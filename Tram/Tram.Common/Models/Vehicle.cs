@@ -13,11 +13,17 @@ namespace Tram.Common.Models
 
         public DateTime StartTime { get; set; }
 
+        public DateTime LastDepartureTime { get; set; }
+
+        public TramLine.Departure Departure { get; set; }
+
         public bool IsOnStop { get; set; }
 
         public Location Position { get; set; }
 
         public float Speed { get; set; }
+
+        public float? MaxSpeed { get; set; }
 
         public Node LastVisitedStop { get; set; }
 
@@ -26,6 +32,10 @@ namespace Tram.Common.Models
         public TramIntersection CurrentIntersection { get; set; }
 
         public List<Node> VisitedNodes { get; set; }
+
+        public List<int> PassengersHistory { get; set; }
+
+        public List<double> DelaysHistory { get; set; }
 
         Vector2 IObjWithCoordinates.Coordinates
         {

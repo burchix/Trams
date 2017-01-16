@@ -84,7 +84,7 @@ namespace Tram.Controller.Controllers
             }
         }
 
-        public void Render(Device device, Vector3 cameraPosition, string selectedVehicleId, string time)
+        public void Render(Device device, Vector3 cameraPosition, Vehicle selectedVehicle, string time)
         {
             if (!isDeviceInit)
             {
@@ -103,7 +103,7 @@ namespace Tram.Controller.Controllers
                 device.DrawUserPrimitives(PrimitiveType.TriangleFan, ViewConsts.POINT_PRECISION, vertex);
             }
 
-            DrawVehicles(device, cameraPosition, selectedVehicleId);
+            DrawVehicles(device, cameraPosition, selectedVehicle);
 
             DrawCarInstersections(device);
 
@@ -131,13 +131,12 @@ namespace Tram.Controller.Controllers
             System.Drawing.Font systemfont = new System.Drawing.Font("Arial", 12f, System.Drawing.FontStyle.Regular);
             text = new Microsoft.DirectX.Direct3D.Font(device, systemfont);
             line = new Line(device);
-            lineVertexes = new Vector2[] { new Vector2(8, 8), new Vector2(55, 8), new Vector2(55, 31), new Vector2(8, 31), new Vector2(8, 8) };
+            lineVertexes = new Vector2[] { new Vector2(8, 8), new Vector2(77, 8), new Vector2(77, 31), new Vector2(8, 31), new Vector2(8, 8) };
             isDeviceInit = true;
         }
 
-        private void DrawVehicles(Device device, Vector3 cameraPosition, string selectedVehicleId)
+        private void DrawVehicles(Device device, Vector3 cameraPosition, Vehicle selectedVehicle)
         {
-            Vehicle selectedVehicle = selectedVehicleId != null ? mainController.Vehicles.FirstOrDefault(v => v.Id.Equals(selectedVehicleId)) : null;
             foreach (var vehicle in mainController.Vehicles)
             {
                 Color tramColor = capacityController.GetTramColor(vehicle.Passengers);

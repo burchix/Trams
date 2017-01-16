@@ -13,7 +13,7 @@
         public const float MAX_TIME_INTERVAL = 0.1f;
         
         // s
-        public const float INTERFACE_REFRESH_TIME_INTERVAL = 2f;
+        public const float INTERFACE_REFRESH_TIME_INTERVAL = 5f;
 
         // s
         public const float ORANGE_LIGHT_INTERVAL = 4f;

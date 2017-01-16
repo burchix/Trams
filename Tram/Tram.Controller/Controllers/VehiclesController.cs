@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Tram.Common.Consts;
 using Tram.Common.Enums;
@@ -30,10 +31,10 @@ namespace Tram.Controller.Controllers
             foreach (var vehicle in mainController.Vehicles)
             {
                 float prevSpeed = vehicle.Speed;
-                CalculateSpeed(vehicle, mainController.Vehicles, deltaTime);
+                CalculateSpeed(vehicle, deltaTime);
                 if (!vehicle.IsOnStop)
                 {
-                    CalculatePosition(vehicle, prevSpeed);
+                    CalculatePosition(vehicle, prevSpeed, deltaTime);
                 }
             }
         }
@@ -54,15 +55,19 @@ namespace Tram.Controller.Controllers
 
         #region Private Methods
         
-        private void CalculateSpeed(Vehicle vehicle, List<Vehicle> vehicles, float deltaTime)
+        private void CalculateSpeed(Vehicle vehicle, float deltaTime)
         {
             TramIntersection tramIntersection;
             //Check if is on stop
             if (vehicle.Speed < CalculationConsts.EPSILON && !vehicle.IsOnStop && vehicle.IsBusStopReached())
             {
                 vehicle.IsOnStop = true;
-                float timeToBoard = capacityController.SetTramCapacity(vehicle);
-                vehicle.Speed = 15; //TODO: tutaj przypisujemy szybkość - na podstawie czasu zapełnienia
+
+                int timeToStop = vehicle.Departure.NextStopIntervals.Count > vehicle.LastVisitedStops.Count ? (int)vehicle.Departure.NextStopIntervals[vehicle.LastVisitedStops.Count] : 0;
+                vehicle.DelaysHistory.Add(((mainController.ActualRealTime - vehicle.LastDepartureTime).TotalMinutes - timeToStop) * 60);
+
+                double timeToBoard = capacityController.SetTramCapacity(vehicle);
+                vehicle.Speed = (float)timeToBoard * VehicleConsts.ACCELERATION * 3600 / 1000; // when speed comes to 0, then tram will run
             }
             else if (vehicle.Speed < CalculationConsts.EPSILON && !vehicle.IsOnStop && vehicle.IsIntersectionReached(out tramIntersection))
             {
@@ -90,12 +95,18 @@ namespace Tram.Controller.Controllers
             //When is on stop, check if can run 
             else if (vehicle.IsOnStop)
             {
-                if (vehicle.Speed < CalculationConsts.EPSILON)
+                if (vehicle.Speed < CalculationConsts.EPSILON && vehicle.CanArleadyStart(mainController.ActualRealTime))
                 {
                     vehicle.IsOnStop = false;
                     vehicle.LastVisitedStop = vehicle.Position.Node1 != null && vehicle.Position.Node1.Type == NodeType.TramStop && vehicle.LastVisitedStop != vehicle.Position.Node1 ? vehicle.Position.Node1 : vehicle.Position.Node2;
                     vehicle.LastVisitedStops.Add(vehicle.LastVisitedStop);
+
                     vehicle.Speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime, true);
+                    float distanceToNextStop = vehicle.Line.MainNodes.Last().Equals(vehicle.LastVisitedStop) ? 0 : vehicle.Line.GetNextStopDistance(vehicle.LastVisitedStop);
+                    int timeToNextStop = vehicle.Departure.NextStopIntervals.Count > vehicle.LastVisitedStops.Count ? (int)vehicle.Departure.NextStopIntervals[vehicle.LastVisitedStops.Count] : 0;
+                    vehicle.MaxSpeed = Math.Min(VehicleConsts.MAX_SPEED, timeToNextStop == 0 ? int.MaxValue : PhysicsHelper.GetMaxSpeed(distanceToNextStop, timeToNextStop * 60));
+
+                    vehicle.LastDepartureTime = mainController.ActualRealTime;
                 }
                 else
                 {
@@ -126,7 +137,7 @@ namespace Tram.Controller.Controllers
                     vehicle.Speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime, false);
                 }
             }
-            else if (vehicle.Speed < VehicleConsts.MAX_SPEED)
+            else if (vehicle.Speed < (vehicle.MaxSpeed ?? VehicleConsts.MAX_SPEED))
             {
                 vehicle.Speed = PhysicsHelper.GetNewSpeed(vehicle.Speed, deltaTime, true);
             }
@@ -138,9 +149,9 @@ namespace Tram.Controller.Controllers
             vehicle.NormalizeSpeed();
         }
 
-        private void CalculatePosition(Vehicle vehicle, float prevSpeed)
+        private void CalculatePosition(Vehicle vehicle, float prevSpeed, float deltaTime)
         {
-            float translation = PhysicsHelper.GetTranslation(prevSpeed, vehicle.Speed);
+            float translation = PhysicsHelper.GetTranslation(prevSpeed, vehicle.Speed, deltaTime);
             if (vehicle.Position.Node2 != null)
             {
                 float distanceToNextPoint = vehicle.RealDistanceTo(vehicle.Position.Node2);

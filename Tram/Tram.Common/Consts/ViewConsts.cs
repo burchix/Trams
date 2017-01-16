@@ -6,7 +6,7 @@ namespace Tram.Common.Consts
     {
         public const float ZOOM_OFFSET = 5f;
 
-        public const float SELECTED_VEHICLE_ZOOM_OFFSET = 1.5f;
+        public const float SELECTED_VEHICLE_ZOOM_OFFSET = 2f;
 
         public const float SWIPE_OFFSET = 0.0005f;
 

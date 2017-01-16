@@ -52,9 +52,9 @@ namespace Tram.Controller.Controllers
             GetAndPrepareModels();
         }
 
-        public void Render(Device device, Vector3 cameraPosition, string selectedVehicleId)
+        public void Render(Device device, Vector3 cameraPosition, Vehicle selectedVehicle)
         {
-            directxController.Render(device, cameraPosition, selectedVehicleId, TimeHelper.GetTimeStr(ActualRealTime));
+            directxController.Render(device, cameraPosition, selectedVehicle, TimeHelper.GetExtTimeStr(ActualRealTime));
         }
 
         public void Update()
@@ -128,7 +128,7 @@ namespace Tram.Controller.Controllers
             {
                 for (int i = line.Departures.Count - 1; i >= 0; i--)
                 {
-                    if (line.Departures[i].StartTime <= ActualRealTime)
+                    if (TimeHelper.GetTimeStr(line.Departures[i].StartTime) == TimeHelper.GetTimeStr(ActualRealTime))
                     {
                         if (line.Departures[i] != line.LastDeparture &&
                             !startPoints.Any(sp => sp.Equals(line.MainNodes.First())) &&
@@ -138,11 +138,15 @@ namespace Tram.Controller.Controllers
                             line.LastDeparture = line.Departures[i];
                             Vehicle newVehicle = new Vehicle()
                             {
-                                Id = line.Id + " - " + TimeHelper.GetTimeStr(line.LastDeparture.StartTime),
+                                Id = TimeHelper.GetTimeStr(line.LastDeparture.StartTime) + " - " + line.Id,
                                 Line = line,
-                                Passengers = 0,
-                                Speed = 0f,
                                 StartTime = line.LastDeparture.StartTime,
+                                LastDepartureTime = line.LastDeparture.StartTime,
+                                Departure = line.LastDeparture,
+                                Passengers = 0,
+                                PassengersHistory = new List<int>() { 0 },
+                                DelaysHistory = new List<double>() { 0 },
+                                Speed = 0f,
                                 IsOnStop = line.MainNodes.First().Type == NodeType.TramStop,
                                 LastVisitedStops = new List<Node>(),
                                 VisitedNodes = new List<Node>()

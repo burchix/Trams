@@ -29,8 +29,6 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            this.rightPanel = new System.Windows.Forms.Panel();
-            this.listView = new System.Windows.Forms.ListView();
             this.renderPanel = new System.Windows.Forms.Panel();
             this.zoomInButton = new System.Windows.Forms.Panel();
             this.zoomOutButton = new System.Windows.Forms.Panel();
@@ -40,31 +38,15 @@
             this.aboutUsButton = new System.Windows.Forms.Panel();
             this.playButton = new System.Windows.Forms.Panel();
             this.pauseButton = new System.Windows.Forms.Panel();
+            this.rightPanel = new System.Windows.Forms.Panel();
+            this.vehiclesGridView = new System.Windows.Forms.DataGridView();
+            this.Id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Preview = new System.Windows.Forms.DataGridViewImageColumn();
+            this.Info = new System.Windows.Forms.DataGridViewImageColumn();
             this.speedCustomTrackBar = new Tram.Simulation.Controls.CustomTrackBar();
             this.rightPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.vehiclesGridView)).BeginInit();
             this.SuspendLayout();
-            // 
-            // rightPanel
-            // 
-            this.rightPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.rightPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.rightPanel.Controls.Add(this.listView);
-            this.rightPanel.Location = new System.Drawing.Point(787, 12);
-            this.rightPanel.Name = "rightPanel";
-            this.rightPanel.Size = new System.Drawing.Size(298, 715);
-            this.rightPanel.TabIndex = 0;
-            // 
-            // listView
-            // 
-            this.listView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listView.Location = new System.Drawing.Point(0, 0);
-            this.listView.Name = "listView";
-            this.listView.Size = new System.Drawing.Size(296, 713);
-            this.listView.TabIndex = 0;
-            this.listView.UseCompatibleStateImageBehavior = false;
-            this.listView.View = System.Windows.Forms.View.List;
-            this.listView.Click += new System.EventHandler(this.listView_Click);
             // 
             // renderPanel
             // 
@@ -178,6 +160,71 @@
             this.pauseButton.Size = new System.Drawing.Size(48, 48);
             this.pauseButton.TabIndex = 8;
             // 
+            // rightPanel
+            // 
+            this.rightPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.rightPanel.AutoScroll = true;
+            this.rightPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.rightPanel.Controls.Add(this.vehiclesGridView);
+            this.rightPanel.Location = new System.Drawing.Point(787, 12);
+            this.rightPanel.Name = "rightPanel";
+            this.rightPanel.Size = new System.Drawing.Size(298, 769);
+            this.rightPanel.TabIndex = 0;
+            // 
+            // vehiclesGridView
+            // 
+            this.vehiclesGridView.AllowUserToAddRows = false;
+            this.vehiclesGridView.AllowUserToDeleteRows = false;
+            this.vehiclesGridView.AllowUserToResizeColumns = false;
+            this.vehiclesGridView.AllowUserToResizeRows = false;
+            this.vehiclesGridView.BackgroundColor = System.Drawing.Color.White;
+            this.vehiclesGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.vehiclesGridView.ColumnHeadersVisible = false;
+            this.vehiclesGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Id,
+            this.Preview,
+            this.Info});
+            this.vehiclesGridView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.vehiclesGridView.Location = new System.Drawing.Point(0, 0);
+            this.vehiclesGridView.MultiSelect = false;
+            this.vehiclesGridView.Name = "vehiclesGridView";
+            this.vehiclesGridView.ReadOnly = true;
+            this.vehiclesGridView.RowHeadersVisible = false;
+            this.vehiclesGridView.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+            this.vehiclesGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.vehiclesGridView.ShowCellErrors = false;
+            this.vehiclesGridView.ShowEditingIcon = false;
+            this.vehiclesGridView.ShowRowErrors = false;
+            this.vehiclesGridView.Size = new System.Drawing.Size(296, 767);
+            this.vehiclesGridView.TabIndex = 0;
+            // 
+            // Id
+            // 
+            this.Id.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Id.HeaderText = "Id";
+            this.Id.Name = "Id";
+            this.Id.ReadOnly = true;
+            this.Id.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            // 
+            // Preview
+            // 
+            this.Preview.HeaderText = "Preview";
+            this.Preview.Image = global::Tram.Simulation.Properties.Resources.center_screen_small;
+            this.Preview.Name = "Preview";
+            this.Preview.ReadOnly = true;
+            this.Preview.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.Preview.Width = 24;
+            // 
+            // Info
+            // 
+            this.Info.HeaderText = "Info";
+            this.Info.Image = global::Tram.Simulation.Properties.Resources.information_small;
+            this.Info.Name = "Info";
+            this.Info.ReadOnly = true;
+            this.Info.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.Info.Width = 24;
+            // 
             // speedCustomTrackBar
             // 
             this.speedCustomTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
@@ -220,16 +267,16 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "MainForm";
             this.Text = "Form1";
             this.rightPanel.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.vehiclesGridView)).EndInit();
             this.ResumeLayout(false);
 
         }
 
         #endregion
-
-        private System.Windows.Forms.Panel rightPanel;
         private System.Windows.Forms.Panel renderPanel;
         private System.Windows.Forms.Panel zoomInButton;
         private System.Windows.Forms.Panel zoomOutButton;
@@ -239,7 +286,11 @@
         private System.Windows.Forms.Panel aboutUsButton;
         private System.Windows.Forms.Panel playButton;
         private System.Windows.Forms.Panel pauseButton;
-        private System.Windows.Forms.ListView listView;
         private Controls.CustomTrackBar speedCustomTrackBar;
+        private System.Windows.Forms.Panel rightPanel;
+        private System.Windows.Forms.DataGridView vehiclesGridView;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Id;
+        private System.Windows.Forms.DataGridViewImageColumn Preview;
+        private System.Windows.Forms.DataGridViewImageColumn Info;
     }
 }

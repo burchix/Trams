@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Tram.Common.Enums;
 using Tram.Common.Models;
 
 namespace Tram.Common.Extensions
@@ -17,6 +18,19 @@ namespace Tram.Common.Extensions
             }
 
             return null;
+        }
+
+        public static float GetNextStopDistance(this TramLine line, Node node)
+        {
+            Node.Next next = line.GetNextNode(node);
+            float distance = next.Distance;
+            while (!(next.Node.Type == NodeType.TramStop && line.MainNodes.Any(n => n.Equals(next.Node))))
+            {
+                next = line.GetNextNode(next.Node);
+                distance += next.Distance;
+            }
+
+            return distance;
         }
     }
 }

@@ -66,13 +66,16 @@ namespace Tram.Common.Extensions
 
         public static void NormalizeSpeed(this Vehicle vehicle)
         {
-            if (vehicle.Speed < 0)
+            if (!vehicle.IsOnStop)
             {
-                vehicle.Speed = 0;
-            }
-            else if (vehicle.Speed > VehicleConsts.MAX_SPEED)
-            {
-                vehicle.Speed = VehicleConsts.MAX_SPEED;
+                if (vehicle.Speed < 0)
+                {
+                    vehicle.Speed = 0;
+                }
+                else if (vehicle.Speed > (vehicle.MaxSpeed ?? VehicleConsts.MAX_SPEED))
+                {
+                    vehicle.Speed = vehicle.MaxSpeed ?? VehicleConsts.MAX_SPEED;
+                }
             }
         }
 
@@ -129,34 +132,6 @@ namespace Tram.Common.Extensions
             float brakingDistance = PhysicsHelper.GetBrakingDistance(speed);
 
             return IsAnyVehicleClose(vehicle, speed, brakingDistance, vehicle.Position.Node1, 0);
-            
-            //Node node = vehicle.Position.Node1;
-
-            //foreach (Vehicle neighbor in node.VehiclesOn)
-            //{
-            //    if (!neighbor.Equals(vehicle) &&
-            //        vehicle.RealDistanceTo(neighbor) <= (brakingDistance + VehicleConsts.SAFE_SPACE) && // check distance between vehicles
-            //        neighbor.RealDistanceTo(neighbor.Position.Node2) <= vehicle.RealDistanceTo(neighbor.Position.Node2) && 
-            //        vehicle.RealDistanceTo(vehicle.Position.Node1) <= neighbor.RealDistanceTo(vehicle.Position.Node1)) // check if object is ahead of vehicle)
-            //    {
-            //        return true;
-            //    }
-            //}
-
-            //List<Node.Next> nextNodes = node.GetAllNextNodes();
-            //float distance = vehicle.RealDistanceTo(node);
-            //return nextNodes.Any(nn => IsAnyVehicleClose(vehicle, speed, brakingDistance, nn.Node, distance));
-
-            //node = nextNode.Node;
-            //distance += vehicle.RealDistanceTo(node);
-            
-            //Vehicle result = vehicles.Where(v => !v.Equals(vehicle) &&
-            //                                     vehicle.RealDistanceTo(v) <= (brakingDistance + VehicleConsts.SAFE_SPACE) &&
-            //                                     v.RealDistanceTo(v.Position.Node2) <= vehicle.RealDistanceTo(v.Position.Node2) && vehicle.RealDistanceTo(vehicle.Position.Node1) <= v.RealDistanceTo(vehicle.Position.Node1) && // check if object is ahead of vehicle
-            //                                     v.VisitedNodes.Any(vn => vn.Equals(vehicle.Position.Node2)) &&
-            //                                     (v.Line.Equals(vehicle.Line) ||
-            //                                     v.VisitedNodes.Intersect(vehicle.VisitedNodes).Any()))
-            //                         .FirstOrDefault();
         }
 
         private static bool IsAnyVehicleClose(Vehicle vehicle, float speed, float brakingDistance, Node node, float distance)
@@ -179,13 +154,15 @@ namespace Tram.Common.Extensions
                     return true;
                 }
             }
-            
+
             return node.GetAllNextNodes()
-                       .Any(nn => IsAnyVehicleClose(vehicle, 
-                                                    speed, 
-                                                    brakingDistance, 
-                                                    nn.Node,
-                                                    isFirstComparation ? vehicle.RealDistanceTo(nn.Node) : distance + nn.Distance));
+                       .Any(nn => IsAnyVehicleClose(vehicle, speed, brakingDistance, nn.Node, isFirstComparation ? vehicle.RealDistanceTo(nn.Node) : distance + nn.Distance));
+        }
+
+        public static bool CanArleadyStart(this Vehicle vehicle, DateTime actualRealTime)
+        {
+            int interval = vehicle.Departure.NextStopIntervals.Count > vehicle.LastVisitedStops.Count ? (int)vehicle.Departure.NextStopIntervals[vehicle.LastVisitedStops.Count] : 0;
+            return TimeHelper.CompareTimes(vehicle.LastDepartureTime + new TimeSpan(0, interval, 0), actualRealTime) <= 0;
         }
 
         private static bool CorrectStopPredicate(Vehicle vehicle, Node node)
