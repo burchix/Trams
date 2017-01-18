@@ -74,6 +74,8 @@ namespace Tram.Simulation.Forms
             capacityChart.ChartAreas[0].AxisY.ScaleView.Zoom(0, Vehicle.PassengersHistory.Max() + 5);
             capacityChart.ChartAreas[0].AxisX.LabelStyle.Format = "{0:0}";
             capacityChart.ChartAreas[0].AxisY.LabelStyle.Format = "{0:0}";
+            capacityChart.ChartAreas[0].AxisX.ScrollBar.Enabled = false;
+            capacityChart.ChartAreas[0].AxisY.ScrollBar.Enabled = false;
 
             for (int i = 0; i < Vehicle.PassengersHistory.Count; i++)
             {
@@ -88,6 +90,8 @@ namespace Tram.Simulation.Forms
             delayChart.ChartAreas[0].AxisY.ScaleView.Zoom(0, Vehicle.DelaysHistory.Max() + 1);
             delayChart.ChartAreas[0].AxisX.LabelStyle.Format = "{0:0}";
             delayChart.ChartAreas[0].AxisY.LabelStyle.Format = "{0:0}";
+            delayChart.ChartAreas[0].AxisX.ScrollBar.Enabled = false;
+            delayChart.ChartAreas[0].AxisY.ScrollBar.Enabled = false;
 
             for (int i = 0; i < Vehicle.PassengersHistory.Count; i++)
             {
