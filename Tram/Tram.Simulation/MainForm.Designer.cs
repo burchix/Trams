@@ -34,7 +34,6 @@
             this.zoomOutButton = new System.Windows.Forms.Panel();
             this.zoomOriginalButton = new System.Windows.Forms.Panel();
             this.centerScreenButton = new System.Windows.Forms.Panel();
-            this.settingsButton = new System.Windows.Forms.Panel();
             this.aboutUsButton = new System.Windows.Forms.Panel();
             this.playButton = new System.Windows.Forms.Panel();
             this.pauseButton = new System.Windows.Forms.Panel();
@@ -112,18 +111,6 @@
             this.centerScreenButton.TabIndex = 5;
             this.centerScreenButton.Click += new System.EventHandler(this.centerScreenButton_Click);
             // 
-            // settingsButton
-            // 
-            this.settingsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.settingsButton.BackColor = System.Drawing.Color.White;
-            this.settingsButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("settingsButton.BackgroundImage")));
-            this.settingsButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.settingsButton.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.settingsButton.Location = new System.Drawing.Point(733, 679);
-            this.settingsButton.Name = "settingsButton";
-            this.settingsButton.Size = new System.Drawing.Size(48, 48);
-            this.settingsButton.TabIndex = 6;
-            // 
             // aboutUsButton
             // 
             this.aboutUsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -131,7 +118,7 @@
             this.aboutUsButton.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("aboutUsButton.BackgroundImage")));
             this.aboutUsButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.aboutUsButton.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.aboutUsButton.Location = new System.Drawing.Point(733, 625);
+            this.aboutUsButton.Location = new System.Drawing.Point(733, 679);
             this.aboutUsButton.Name = "aboutUsButton";
             this.aboutUsButton.Size = new System.Drawing.Size(48, 48);
             this.aboutUsButton.TabIndex = 7;
@@ -255,7 +242,6 @@
             this.Controls.Add(this.pauseButton);
             this.Controls.Add(this.playButton);
             this.Controls.Add(this.aboutUsButton);
-            this.Controls.Add(this.settingsButton);
             this.Controls.Add(this.zoomOutButton);
             this.Controls.Add(this.zoomOriginalButton);
             this.Controls.Add(this.renderPanel);
@@ -282,7 +268,6 @@
         private System.Windows.Forms.Panel zoomOutButton;
         private System.Windows.Forms.Panel zoomOriginalButton;
         private System.Windows.Forms.Panel centerScreenButton;
-        private System.Windows.Forms.Panel settingsButton;
         private System.Windows.Forms.Panel aboutUsButton;
         private System.Windows.Forms.Panel playButton;
         private System.Windows.Forms.Panel pauseButton;

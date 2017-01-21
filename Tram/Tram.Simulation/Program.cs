@@ -20,7 +20,6 @@ namespace Tram.Simulation
 
             using (MainForm form = new MainForm())
             {
-                //int screenWidth = Screen.PrimaryScreen.Bounds.Width;
                 int screenHeight = Screen.PrimaryScreen.Bounds.Height - 60;
                 form.Size = new System.Drawing.Size(screenHeight * form.Width / form.Height, screenHeight);
                 form.Init(controller, directxController);

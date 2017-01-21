@@ -11,6 +11,8 @@ namespace Tram.Common.Extensions
 {
     public static class VehicleExtensions
     {
+        public static float RealDistanceTo(this Vehicle vehicle, IObjWithCoordinates point) => GeometryHelper.GetRealDistance(vehicle.Position.Coordinates, point.Coordinates);
+
         public static bool IsBusStopReached(this Vehicle vehicle)
         {
             var node1 = vehicle.Position.Node1;
@@ -23,12 +25,12 @@ namespace Tram.Common.Extensions
         {
             var node1 = vehicle.Position.Node1;
             var node2 = vehicle.Position.Node2;
-            if (node1 != null && node1.Type == NodeType.TramCross)
+            if (node1 != null && node1.Type == NodeType.TramCross && !node1.Intersection.Equals(vehicle.LastIntersection))
             {
                 intersection = node1.Intersection;
                 return true;
             }
-            else if (node2 != null && node2.Type == NodeType.TramCross)
+            else if (node2 != null && node2.Type == NodeType.TramCross && !node2.Intersection.Equals(vehicle.LastIntersection))
             {
                 intersection = node2.Intersection;
                 return true;
@@ -60,9 +62,11 @@ namespace Tram.Common.Extensions
             return false;
         }
 
-        public static bool IsStillOnIntersection(this Vehicle vehicle) => vehicle.CurrentIntersection.Nodes.Any(n => (vehicle.RealDistanceTo(n) - VehicleConsts.LENGTH) < 0);
-
-        public static float RealDistanceTo(this Vehicle vehicle, IObjWithCoordinates point) => GeometryHelper.GetRealDistance(vehicle.Position.Coordinates, point.Coordinates);
+        public static bool IsStillOnIntersection(this Vehicle vehicle)
+        {
+            return vehicle.CurrentIntersection.Nodes.Any(n => (vehicle.RealDistanceTo(n) - VehicleConsts.LENGTH) < 0) ||
+                   vehicle.CurrentIntersection.Equals(vehicle.Position.Node2?.Intersection);
+        }
 
         public static void NormalizeSpeed(this Vehicle vehicle)
         {

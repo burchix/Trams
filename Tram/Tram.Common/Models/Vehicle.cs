@@ -31,6 +31,8 @@ namespace Tram.Common.Models
 
         public TramIntersection CurrentIntersection { get; set; }
 
+        public TramIntersection LastIntersection { get; set; }
+
         public List<Node> VisitedNodes { get; set; }
 
         public List<int> PassengersHistory { get; set; }

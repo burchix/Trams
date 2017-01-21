@@ -42,6 +42,7 @@ namespace Tram.Simulation
             playButton.Click += PlayButton_Click;
             pauseButton.Click += PauseButton_Click;
             vehiclesGridView.CellClick += vehiclesGridView_CellClick;
+            aboutUsButton.Click += AboutUsButton_Click;
 
             // Set variables
             cameraPosition = new Vector3(0, 0, ViewConsts.START_CAMERA_Z);
@@ -204,6 +205,15 @@ namespace Tram.Simulation
                     vehicleForm.Show();
                 }
             }
+        }
+        
+        private void AboutUsButton_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Modelowanie i symulacja systemów 2017" + Environment.NewLine
+                + Environment.NewLine + "Katarzyna Burczyk" 
+                + Environment.NewLine + "Zuzanna Drwiła" 
+                + Environment.NewLine + "Kamil Gębarowski",
+                "Symulacja krakowskiej sieci tramwajowej");
         }
 
         #endregion Private Handlers
